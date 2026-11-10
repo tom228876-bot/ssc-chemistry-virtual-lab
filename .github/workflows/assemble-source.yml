@@ -1,0 +1,26 @@
+name: Assemble virtual lab source
+on:
+  push:
+    paths:
+      - "_upload/**"
+      - ".github/workflows/assemble-source.yml"
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild complete source files
+        run: |
+          cat _upload/main/* > src/main.js
+          cat _upload/css/* > src/style.css
+          rm -rf _upload
+          node --check src/main.js
+      - name: Commit assembled source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/main.js src/style.css _upload
+          git commit -m "Restore complete 3D virtual lab source"
+          git push
