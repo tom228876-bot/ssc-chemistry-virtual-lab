@@ -1,8 +1,0 @@
-der(0,.82,0,.19,.16,.38,mats.glass,'flask-neck',flask);
-const cone=mesh(new THREE.CylinderGeometry(.48,.17,.78,48,1,true),mats.glass,0,.38,0,flask,'flask-body');cone.rotation.z=0;
-const flaskBottom=mesh(new THREE.CylinderGeometry(.17,.17,.05,32),mats.glass,0,-.02,0,flask,'flask-base');
-const flaskLiquid=mesh(new THREE.CylinderGeometry(.29,.12,.12,48),new THREE.MeshPhysicalMaterial({color:0xe9a1a1,transparent:true,opacity:.74,roughness:.12}),0,.12,0,flask,'flask-liquid');
-const flaskRim=mesh(new THREE.TorusGeometry(.19,.025,10,36),mats.glass,0,1.02,0,flask,'flask-rim');flaskRim.rotation.x=Math.PI/2;scene.add(flask);flask.userData.draggable=true;flask.userData.kind='flask';movable.push(flask);
-// burette and retort stand
-const stand=new THREE.Group();stand.position.set(3.2,.62,-.45);scene.add(stand);mesh(new THREE.BoxGeometry(1.1,.12,.8),mats.metal,0,.06,0,stand,'stand-base');
-mesh(new THR

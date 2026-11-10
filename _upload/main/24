@@ -1,5 +1,0 @@
-)});$('help').addEventListener('click',()=>$('modal').classList.add('show'));$('close-help').addEventListener('click',()=>$('modal').classList.remove('show'));$('modal').addEventListener('click',e=>{if(e.target===$('modal'))$('modal').classList.remove('show')});
-// drag 3D apparatus across the workbench
-function setPointer(e){const r=renderer.domElement.getBoundingClientRect();ndc.x=((e.clientX-r.left)/r.width)*2-1;ndc.y=-((e.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(ndc,camera)}
-function findMovable(o){let p=o;while(p&&p!==scene){if(p.userData.draggable)return p;p=p.parent}return null}
-renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0)return;setPointer(e);const hits=raycaster.intersectObjects(scene.children,true);for(const h of hits){const obj=findMovable(h.object);if(obj){dragging=obj;selectObject(obj);controls.enabled=false;pointerDown={x:e.clientX,y:e.

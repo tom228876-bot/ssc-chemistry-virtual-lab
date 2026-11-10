@@ -1,6 +1,0 @@
-erial({color:0xf7f9fb,roughness:.8}),wood:new THREE.MeshStandardMaterial({color:0xb28b63,roughness:.75}),rubber:new THREE.MeshStandardMaterial({color:0x31363b,roughness:.8})};
-const movable=[]; const raycaster=new THREE.Raycaster(), ndc=new THREE.Vector2(), plane=new THREE.Plane(new THREE.Vector3(0,1,0),-0.2), hit=new THREE.Vector3();
-function mesh(geo,mat,x,y,z,parent=scene,name=''){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;m.name=name;if(parent)parent.add(m);return m}
-function box(x,y,z,w,h,d,mat,name=''){return mesh(new THREE.BoxGeometry(w,h,d),mat,x,y,z,scene,name)}
-function cylinder(x,y,z,rt,rb,h,mat,name='',parent=scene){return mesh(new THREE.CylinderGeometry(rt,rb,h,32,1,true),mat,x,y,z,parent,name)}
-function labelSprite(text){const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');ctx.fillSt

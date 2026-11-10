@@ -1,4 +1,0 @@
-,-.08,0,g,'pipette-tip');mesh(new THREE.SphereGeometry(.085,16,16),new THREE.MeshStandardMaterial({color:0xd46d6d}),0,1,0,g,'pipette-bulb')}else if(kind==='dropper'){cylinder(0,.3,0,.035,.035,.65,mats.glass,'dropper-tube',g);mesh(new THREE.SphereGeometry(.09,16,16),new THREE.MeshStandardMaterial({color:0xd46d6d}),0,.7,0,g,'dropper-bulb')}else{cylinder(0,.42,0,.025,.025,.9,mats.glass,id,g)}scene.add(g);g.userData.draggable=true;g.userData.kind=kind;movable.push(g);return g}
-const pipette=makeTool('pipette',-3.1,.25,'pipette');const dropper=makeTool('dropper',-.8,-.75,'dropper');const rod=makeTool('glassRod',-.8,-.35,'rod');
-// graduated measuring cylinder
-const measure=new THREE.Group();measure.position.set(-.1,.62,-1.25);cylinder(0,.55,0,.15,.16,1.05,mats.glass,'measure-glass',measure);mesh(new THREE.CylinderGeometry(.16,.16,.05,24),mats.glass,0,.02,0,measure,'measure-base');scene.add(me

@@ -1,4 +1,0 @@
-tShadowMap; renderer.outputColorSpace=THREE.SRGBColorSpace;
-const controls = new OrbitControls(camera,renderer.domElement); controls.target.set(0,1.2,0); controls.enableDamping=true; controls.maxPolarAngle=Math.PI*.49; controls.mouseButtons.LEFT=THREE.MOUSE.PAN; controls.mouseButtons.RIGHT=THREE.MOUSE.ROTATE;
-scene.add(new THREE.HemisphereLight(0xffffff,0x71849a,2)); const keyLight=new THREE.DirectionalLight(0xffffff,2.7); keyLight.position.set(5,9,6); keyLight.castShadow=true; keyLight.shadow.mapSize.set(2048,2048); scene.add(keyLight);
-const mats={glass:new THREE.MeshPhysicalMaterial({color:0xb9e2f5,transparent:true,opacity:.22,roughness:.06,metalness:0,transmission:.75,thickness:.15,side:THREE.DoubleSide}),metal:new THREE.MeshStandardMaterial({color:0x9aa8b3,metalness:.8,roughness:.28}),blue:new THREE.MeshStandardMaterial({color:0x2878cb,roughness:.35}),white:new THREE.MeshStandardMat

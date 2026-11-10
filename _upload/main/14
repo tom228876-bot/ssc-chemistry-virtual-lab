@@ -1,4 +1,0 @@
-EE.CylinderGeometry(.045,.045,3.3,16),mats.metal,0,1.75,0,stand,'stand-rod');box(-.34,2.7,0,.75,.1,.12,mats.metal,'stand-clamp');
-const burette=new THREE.Group();burette.position.set(0,2.2,.02);burette.name='burette';cylinder(0,.45,0,.09,.09,1.75,mats.glass,'burette-glass',burette);const buretteLiquid=mesh(new THREE.CylinderGeometry(.075,.075,.04,24),new THREE.MeshPhysicalMaterial({color:0x8eadee,transparent:true,opacity:.78}),0,-.35,0,burette,'burette-liquid');cylinder(0,-.55,0,.035,.035,.28,mats.metal,'burette-tip',burette);box(.13,-.44,0,.26,.045,.07,mats.rubber,'burette-tap').rotation.z=.2;stand.add(burette);
-// pipette, dropper, glass rod and measuring cylinder
-function makeTool(id,x,z,kind){const g=new THREE.Group();g.position.set(x,.65,z);g.name=id;if(kind==='pipette'){cylinder(0,.45,0,.045,.045,.95,mats.glass,'pipette-tube',g);mesh(new THREE.ConeGeometry(.045,.16,16),mats.glass,0

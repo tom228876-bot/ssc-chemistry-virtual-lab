@@ -1,8 +1,0 @@
-yle='#fff';ctx.fillRect(0,0,512,128);ctx.fillStyle='#202124';ctx.font='bold 42px Arial';ctx.textAlign='center';ctx.fillText(text,256,78);const tex=new THREE.CanvasTexture(c);const sp=mesh(new THREE.PlaneGeometry(1.1,.28),new THREE.MeshBasicMaterial({map:tex,transparent:true}),0,0,0,null);return sp}
-// laboratory room and workbench
-box(0,-.18,0,22,.3,22,new THREE.MeshStandardMaterial({color:0xdfe7ed}),'floor');box(0,.48,0,9,.22,5,new THREE.MeshStandardMaterial({color:0xb9c9d5}),'bench');
-for(const x of [-4.1,4.1])for(const z of [-2,2])box(x,-.48,z,.16,1.4,.16,mats.metal,'bench-leg');
-box(0,3,-4.8,14,5.5,.22,new THREE.MeshStandardMaterial({color:0xe3ebf2}),'wall');
-for(let i=0;i<7;i++){const x=-6+i*2;box(x,3.3,-4.64,1.55,1.4,.12,new THREE.MeshStandardMaterial({color:0xc9d9e7}),'cabinet');}
-// bottle maker
-function bottle(id,x,z,color,label){const g=new THREE.Group();g.position.set(x,.62,z)

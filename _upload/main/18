@@ -1,5 +1,0 @@
-ntListener('click',()=>{currentTool=b.dataset.tool;$('tool-instruction').textContent=toolData.find(t=>t.id===currentTool).hint;updateTools();const obj={pipette,indicator:dropper,burette,rod}[currentTool];if(obj)selectObject(obj)}));$('tool-instruction').textContent=toolData.find(t=>t.id===currentTool).hint}
-function selectObject(obj){movable.forEach(o=>{o.traverse(c=>{if(c.material&&c.material.emissive)c.material.emissive.set(0x000000)})});selectedObject=obj;obj.traverse(c=>{if(c.material&&c.material.emissive)c.material.emissive.set(0x223355)});}
-let selectedObject=pipette;selectObject(pipette);
-function nearXZ(a,b,max=1.05){const pa=new THREE.Vector3(),pb=new THREE.Vector3();a.getWorldPosition(pa);b.getWorldPosition(pb);return Math.hypot(pa.x-pb.x,pa.z-pb.z)<max}
-function doAction(){if(currentTool==='pipette'){if(step===0){if(!nearXZ(pipette,hclBottle,1.15)){toast('à¦ªà¦¿à¦ªà§à¦à¦à¦¿

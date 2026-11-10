@@ -1,9 +1,0 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import './style.css';
-
-const $ = (id) => document.getElementById(id);
-const app = $('app');
-app.innerHTML = `
-<header class="topbar"><div class="brand"><span class="brand-mark">â</span><span>SSC Chemistry Lab<small>Interactive 3D Virtual Laboratory Â· Bangladesh</small></span></div><div class="top-actions"><span class="status-pill">LIVE SIMULATION</span><button class="btn" id="help">à¦à§à¦­à¦¾à¦¬à§ à¦¬à§à¦¯à¦¬à¦¹à¦¾à¦° à¦à¦°à¦¬?</button></div></header>
-<div class="layout"><aside class="panel left"><div class="eyebrow">Practical library</div><h2>à¦ªà¦°à§à¦à§à¦·à¦¾ à¦¨à¦¿à¦°à§à¦¬à¦¾à¦à¦¨</h2><div id="experiments"><button class="experiment active"><span class="exp-icon">âï¸</span><span><span class="exp-name">à¦à§à¦¯à¦¾à¦¸à¦¿à¦¡-à¦à§à¦·à¦¾à¦° à¦à¦¾à¦à¦à§à¦°à§à¦¶à¦¨<

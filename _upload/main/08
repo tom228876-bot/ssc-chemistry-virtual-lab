@@ -1,7 +1,0 @@
-lass rod',icon:'ð¥¢',hint:'à¦«à§à¦²à¦¾à¦¸à§à¦à§à¦° à¦à¦¾à¦à§ à¦à¦¾à¦à¦¦à¦£à§à¦¡ à¦¨à¦¿à§à§ à¦¨à¦¾à§à¦¾à¦¨à§à¦° à¦à¦¾à¦ à¦à¦°à§à¥¤'}
-];
-let currentTool='pipette', step=0, acidInFlask=0, naohInFlask=0, buretteVolume=0, indicatorAdded=false, endpoint=false, pipetteFilled=false, dragging=null, dragOffset=new THREE.Vector3(), pointerDown=null;
-const toast = (s)=>{const el=$('toast');el.textContent=s;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2200)};
-const scene = new THREE.Scene(); scene.background = new THREE.Color('#edf4fb');
-const camera = new THREE.PerspectiveCamera(40,1,.1,100); camera.position.set(8,7,10);
-const renderer = new THREE.WebGLRenderer({canvas:$('lab'),antialias:true,alpha:false}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSof

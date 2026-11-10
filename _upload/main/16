@@ -1,7 +1,0 @@
-asure);measure.userData.draggable=true;measure.userData.kind='measure';movable.push(measure);
-// visual graduations
-for(let i=0;i<7;i++)box(-.1,.95+i*.1,-1.095,.08,.012,.008,mats.metal,'graduation');
-// small rack and test tubes
-box(-4,.62,-1.4,1.25,.12,.65,mats.wood,'rack');for(let i=0;i<4;i++){cylinder(-4.45+i*.3,1,-1.4,.075,.08,.7,mats.glass,'test-tube');}
-
-function updateFlaskVisual(){const v=acidInFlask+naohInFlask;flaskLiquid.scale.y=Math.max(.3,Math.min(1.7,.35+v/18));flaskLiquid.position.y=.09+Math.min(.28,v/50);if(endpoint)flaskLiquid.material.color.set('#ef7ca9');else if(indicatorAdded)flaskLiquid.material.color.set('#dceef8');else if(acidInFlask>0)flaskLiquid.material.color.set('#efaaaa');else flaskLiquid.material.color.set('#dceef8');$('flask-volume').textContent=v.toFixed(1)+' mL';const molesAcid=acidInFlask*.1/1000;const molesBase=naohInFlask*.1/1000;let ph='â';if(v>0){if

@@ -1,3 +1,0 @@
-d:#e6f4ea;color:#137333;font-weight:700}
-@media(max-width:1150px){.layout{grid-template-columns:230px minmax(400px,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:15px}.right .guide-box{grid-column:1/-1}}
-@media(max-width:760px){.topbar{height:58px;padding:0 12px}.brand{font-size:15px}.brand-mark{width:32px;height:32px}.top-actions .btn{padding:7px 10px;font-size:11px}.layout{display:flex;flex-direction:column;padding:10px;gap:10px}.main{order:0}.left{order:1}.right{order:2;display:block}.scene-wrap{height:420px;min-height:360px}.scene-title h1{font-size:16px}.bottom-grid{grid-template-columns:1fr}.scene-tools .btn{font-size:10px;padding:7px 9px}.panel{padding:13px}}

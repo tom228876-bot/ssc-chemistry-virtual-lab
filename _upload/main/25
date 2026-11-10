@@ -1,5 +1,0 @@
-clientY};renderer.domElement.setPointerCapture(e.pointerId);break}}});
-renderer.domElement.addEventListener('pointermove',e=>{if(!dragging)return;setPointer(e);const dragPlane=new THREE.Plane(new THREE.Vector3(0,1,0),-(dragging.position.y));if(raycaster.ray.intersectPlane(dragPlane,hit)){dragging.position.x=THREE.MathUtils.clamp(hit.x,-4.1,4.1);dragging.position.z=THREE.MathUtils.clamp(hit.z,-1.9,2.0)}});
-renderer.domElement.addEventListener('pointerup',()=>{if(dragging){dragging=null;controls.enabled=true}});renderer.domElement.addEventListener('pointercancel',()=>{dragging=null;controls.enabled=true});
-function resize(){const w=$('scene-wrap').clientWidth,h=$('scene-wrap').clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}new ResizeObserver(resize).observe($('scene-wrap'));resize();
-function animate(){requestAnimationFrame(animate);controls.upda
