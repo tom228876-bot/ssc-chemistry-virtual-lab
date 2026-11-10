@@ -1,0 +1,5 @@
+;g.name=id;const body=mesh(new THREE.CylinderGeometry(.25,.29,.72,32),mats.glass,0,.42,0,g,id);body.userData.draggable=id;const liquid=mesh(new THREE.CylinderGeometry(.225,.255,.34,32),new THREE.MeshPhysicalMaterial({color,transparent:true,opacity:.72,roughness:.2}),0,.25,0,g,id+'-liquid');const neck=mesh(new THREE.CylinderGeometry(.105,.12,.2,24),mats.glass,0,.88,0,g,id+'-neck');const cap=mesh(new THREE.CylinderGeometry(.13,.13,.12,24),mats.rubber,0,1.04,0,g,id+'-cap');const spr=labelSprite(label);spr.position.set(0,.46,.27);g.add(spr);scene.add(g);g.userData.draggable=true;g.userData.kind='bottle';movable.push(g);return g}
+const hclBottle=bottle('hclBottle',-3.1,.9,0xe98b8b,'0.1 M HCl');const naohBottle=bottle('naohBottle',-1.9,.9,0x8eadee,'0.1 M NaOH');
+// conical flask with animated solution level
+const flask=new THREE.Group();flask.position.set(1.4,.62,.65);flask.name='flask';
+cylin
