@@ -32,7 +32,7 @@ liquid=new THREE.Mesh(new THREE.CylinderGeometry(.45,.45,1,48),M(0x39bde4,.1,.2,
 ray=new THREE.Raycaster();mouse=new THREE.Vector2();renderer.domElement.addEventListener('pointerdown',e=>{let r=renderer.domElement.getBoundingClientRect();mouse.x=(e.clientX-r.left)/r.width*2-1;mouse.y=-(e.clientY-r.top)/r.height*2+1;ray.setFromCamera(mouse,camera);let h=ray.intersectObjects(Object.values(objects));if(h.length){let n=h[0].object.userData.name;if(['Beaker','Test tube','Flask','Burner','Reagent bottle'].includes(n)){chosen=n;$('selected').textContent=n;$('observation').textContent=tr('নির্বাচিত যন্ত্র: ','Selected apparatus: ')+n}}});resize();window.addEventListener('resize',resize);animate()}
 function clearFluid(){for(const p of fluidParticles)scene.remove(p);fluidParticles=[]}
 function pourReagent(which,ml){
- pourQueue.push({which,ml});
+ if(which)pourQueue.push({which,ml});
  if(flowing)return;
  const next=pourQueue.shift();if(!next)return;
  flowing=true;which=next.which;ml=next.ml;
