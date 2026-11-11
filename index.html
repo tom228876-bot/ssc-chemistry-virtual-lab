@@ -34,13 +34,13 @@ function clearFluid(){for(const p of fluidParticles)scene.remove(p);fluidParticl
 function pourReagent(which,ml){
  if(flowing)return;flowing=true;
  const bottle=objects['Reagent bottle'];if(bottle)bottle.rotation.z=-.62;
- const count=Math.max(12,Math.round(ml*.7)),duration=1100+ml*5;
+ const solid=['জিঙ্ক','লোহা','বালি','ফিল্টার'].includes(which),count=Math.max(12,Math.round(ml*.7)),duration=1100+ml*5;
  const origin=new THREE.Vector3(2.88,1.9,-.6),target=new THREE.Vector3(.04,1.52,.02);
  const colors={'HCl':0xd6e9f6,'NaOH':0xf0dc82,'লিটমাস':0xb34f9c,'জিঙ্ক':0x9daeb6,'পানি':0x7dc9e7,'সূচক':0xc65b8b,'CO₂':0xd7eff4,'চুনের পানি':0xe5edcf,'CuSO₄':0x298de0,'লোহা':0x9c9b8e,'বালি':0xc9a66b,'ফিল্টার':0xf3f0dc};
- const mat=new THREE.MeshStandardMaterial({color:colors[which]||0x65c7e0,metalness:.05,roughness:.2,transparent:true,opacity:.82});
- for(let i=0;i<count;i++){let p=new THREE.Mesh(new THREE.SphereGeometry(.025+Math.random()*.018,8,8),mat);p.position.copy(origin);scene.add(p);fluidParticles.push(p)}
+ const mat=new THREE.MeshStandardMaterial({color:colors[which]||0x65c7e0,metalness:solid?.55:.05,roughness:solid?.65:.2,transparent:!solid,opacity:solid?1:.82});
+ for(let i=0;i<count;i++){let p=new THREE.Mesh(new THREE.SphereGeometry(solid?.018+Math.random()*.018:.025+Math.random()*.018,8,8),mat);p.position.copy(origin);scene.add(p);fluidParticles.push(p)}
  const start=performance.now();
- const tick=now=>{let t=Math.min(1,(now-start)/duration);fluidParticles.forEach((p,i)=>{let u=Math.max(0,Math.min(1,t*1.18-i/count*.25));p.position.set(origin.x+(target.x-origin.x)*u,origin.y+(target.y-origin.y)*u-1.05*u*u,origin.z+(target.z-origin.z)*u);p.scale.setScalar(1-u*.45)});if(t<1)requestAnimationFrame(tick);else{clearFluid();if(bottle)bottle.rotation.z=0;liquidVolume=Math.min(100,liquidVolume+ml);const h=.08+liquidVolume/100*.54;liquid.scale.y=h;liquid.position.y=1.27+h/2;flowing=false}};
+ const tick=now=>{let t=Math.min(1,(now-start)/duration);fluidParticles.forEach((p,i)=>{let u=Math.max(0,Math.min(1,t*1.18-i/count*.25));p.position.set(origin.x+(target.x-origin.x)*u,origin.y+(target.y-origin.y)*u-(solid?1.3:1.05)*u*u+(solid?Math.sin(i*3.7)*.025:0),origin.z+(target.z-origin.z)*u+(solid?Math.cos(i*2.1)*.025:0));p.scale.setScalar(1-u*.45)});if(t<1)requestAnimationFrame(tick);else{clearFluid();if(bottle)bottle.rotation.z=0;if(!solid){liquidVolume=Math.min(100,liquidVolume+ml);const h=.08+liquidVolume/100*.54;liquid.scale.y=h;liquid.position.y=1.27+h/2}flowing=false}};
  requestAnimationFrame(tick);
 }
 function resize(){if(!renderer)return;let w=$('scene').clientWidth,h=$('scene').clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
