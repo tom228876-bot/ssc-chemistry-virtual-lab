@@ -81,7 +81,7 @@ function ui(){
  $('experiments').onclick=e=>{const btn=e.target.closest('.exp');if(btn){const n=Number(btn.dataset.i);if(Number.isInteger(n)&&n>=0&&n<activeData.length)select(n)}};
  $('reagents').innerHTML=activeData[current].chem.map(c=>'<button class="reagent '+(added.includes(c)?'active':'')+'" data-r="'+c+'"><div class="drop"></div>'+c+'</button>').join('');
  document.querySelectorAll('#reagents .reagent').forEach(btn=>btn.onclick=()=>{const item=btn.dataset.r;reagent=item;if(!added.includes(item)){added.push(item);reagentVolumes[item]=selectedVolume;if(category==='chemistry')pourReagent(item,selectedVolume)}document.querySelectorAll('#reagents .reagent').forEach(el=>el.classList.toggle('active',added.includes(el.dataset.r)));$('state').textContent=tr('নির্বাচিত','Selected');$('observation').textContent=item+' · '+tr('নির্বাচিত হয়েছে। অন্য উপকরণও নির্বাচন করো।','selected. Choose the remaining materials.')});
- $('completed').textContent=done.size+' / '+activeData.length;$('selected').textContent=chosen;
+ $('completed').textContent=Array.from(done).filter(x=>category==='chemistry'?typeof x==='number':typeof x==='string'&&x.startsWith(category+':')).length+' / '+activeData.length;$('selected').textContent=chosen;
  $('safety').innerHTML='<strong>'+tr('সতর্কতা:','Safety:')+'</strong> '+activeData[current].safety+' '+tr('শুধু শিক্ষামূলক simulation।','Educational simulation only.');
 }
 function select(i){current=i;$('experimentPicker').value=String(i);$('sceneTitle').textContent=String(i+1).padStart(2,'0')+' · '+tr(activeData[i].bn,activeData[i].en);$('sceneSub').textContent=tr('পরীক্ষা নির্বাচন করা হয়েছে · উপকরণ বেছে নিন','Practical selected · Choose materials');$('reactionHud').innerHTML='<b>'+tr('পরীক্ষা শুরু করুন','Start practical')+'</b><span>'+tr('উপকরণ নির্বাচন করে Run চাপুন।','Select materials and press Run.')+'</span>';reagent=null;added=[];reagentVolumes={};liquidVolume=0;temperature=25;pourQueue=[];clearFluid();liquid.scale.y=.01;liquid.position.y=1.275;if(meniscus)meniscus.position.y=1.28;$('state').textContent=tr('প্রস্তুত','Ready');$('observation').textContent=tr('পরীক্ষা নির্বাচন করা হয়েছে। উপকরণ যোগ করুন।','Practical selected. Add materials.');liquid.material.color.setHex(0x40b9db);liquid.material.opacity=.6;flaskLiquid.material.color.setHex(0x40b9db);flaskLiquid.material.opacity=.55;scienceObjects.forEach(o=>scene.remove(o));scienceObjects=[];ui()}
@@ -253,7 +253,10 @@ function pourReagent(which,ml){
 function resize(){if(!renderer)return;let w=$('scene').clientWidth,h=$('scene').clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
 function animate(){requestAnimationFrame(animate);if(flame){flame.scale.y=1+Math.sin(Date.now()*.009)*.1;flame.scale.x=1+Math.sin(Date.now()*.013)*.1}renderer.render(scene,camera)}
 function runScienceModule(){
- const d=activeData[current],missing=d.chem.filter(x=>!added.includes(x));if(missing.length){$('observation').textContent=tr('আরও নির্বাচন করো: ','Please select: ')+missing.join(', ');return;}
+ const d=activeData[current],missing=d.chem.filter(x=>!added.includes(x));
+ if(missing.length){$('observation').innerHTML='<strong>'+tr('আরও নির্বাচন করো: ','Please select: ')+'</strong>'+missing.join(', ');$('state').textContent=tr('উপকরণ বাকি','Materials missing');return;}
+ $('observation').innerHTML='<strong>'+tr('পর্যবেক্ষণ:','Observation:')+'</strong> '+tr(d.bnobs,d.enobs)+'<br><br><strong>'+tr('সূত্র:','Formula:')+'</strong> '+d.equation+'<br><br>'+tr('সিমুলেশন প্রস্তুত হচ্ছে…','Preparing simulation…');
+
  scienceObjects.forEach(o=>scene.remove(o));scienceObjects=[];const g=new THREE.Group();scene.add(g);scienceObjects.push(g);
  const material=(c,t=false)=>new THREE.MeshStandardMaterial({color:c,roughness:.42,transparent:t,opacity:t?.45:1});
  const add=(geo,mat,x,y,z)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);g.add(m);return m};
@@ -285,7 +288,7 @@ function runScienceModule(){
  const idResult=category==='physics'?(id===0?'Example: 4.0 × 2.0 × 1.5 cm = 12.0 cm³':id===1?'Example: d = 0.50 mm; A ≈ 0.196 mm²':id===2?'Example: 1.5 m / 2 s = 0.75 m/s':id===4?'Example: 50 m / 8 s = 6.25 m/s':id===5?'Example: 0.20 kg → 1.96 N':id===6?'Example: 50 kg × 9.8 × 3 m / 6 s = 245 W':id===8?'Example: 120 g / 40 cm³ = 3.0 g/cm³':id===9?'Sample plateau: 0°C':id===10?'Sample plateau: 100°C at 1 atm':d.equation):id===10?'Sample pulse: rest 72 bpm → exercise 112 bpm':id===11?'Sample BP: rest 112/72 → exercise 128/78 mmHg':id===12?'Labels: skull, spine, ribs, humerus, radius, femur, tibia':d.bnobs;
  $('state').textContent=tr('সিমুলেশন চলছে','Simulation running');$('reactionHud').innerHTML='<b>'+tr(d.bn,d.en)+'</b><span>'+tr('3D মডেল ও পর্যবেক্ষণ চালু হয়েছে।','3D model and observation started.')+'</span>';
  $('observation').innerHTML='<strong>'+tr('পর্যবেক্ষণ:','Observation:')+'</strong> '+tr(d.bnobs,d.enobs)+'<br><br><strong>'+tr('সূত্র:','Formula:')+'</strong> '+d.equation+'<br><br><strong>'+tr('নমুনা ফলাফল:','Sample result:')+'</strong> '+idResult+'<br><small>'+tr('আদর্শায়িত শিক্ষামূলক simulation; বাস্তব ফল ভিন্ন হতে পারে।','Idealized educational simulation; actual results may differ.')+'</small>';
- done.add(category+':'+current);$('completed').textContent=done.size+' / '+activeData.length;$('steps').innerHTML=activeProtocols[current].map((x,i)=>'<span class="step done">✓ '+(i+1)+' · '+x+'</span>').join('');
+ done.add(category+':'+current);$('completed').textContent=Array.from(done).filter(x=>category==='chemistry'?typeof x==='number':typeof x==='string'&&x.startsWith(category+':')).length+' / '+activeData.length;$('steps').innerHTML=activeProtocols[current].map((x,i)=>'<span class="step done">✓ '+(i+1)+' · '+x+'</span>').join('');
 }
 function run(){if(category!=='chemistry'){runScienceModule();return;}
 
