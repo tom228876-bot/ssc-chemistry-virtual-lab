@@ -1,27 +1,16 @@
 # SSC Chemistry Virtual Lab
 
-A Bengali-first, interactive Three.js chemistry practical simulator for SSC students in Bangladesh.
+An interactive Three.js 3D chemistry learning environment for Bangladesh SSC students.
 
-## Current practical
+## Features
+- 3D laboratory room with orbit, zoom, and clickable apparatus
+- Six SSC chemistry practical simulations
+- Reagent selection, animated reaction bubbles, visual colour changes, observations and equations
+- Bangla / English interface toggle
+- Responsive desktop and mobile layout
 
-**Acid-base titration (0.1 M HCl vs 0.1 M NaOH)**
-- Move 3D apparatus by dragging it on the workbench.
-- Use a pipette to transfer 10 mL HCl to a conical flask.
-- Add phenolphthalein indicator.
-- Fill the burette with 0.1 M NaOH and add it in measured increments.
-- Observe the indicator endpoint and calculated pH/volume readouts.
+## Run
+Open `index.html` in a modern browser with internet access. Three.js and OrbitControls load from jsDelivr CDN.
 
-## Run locally
-
-```bash
-npm install
-npm run dev
-```
-
-## Build
-
-```bash
-npm run build
-```
-
-This is an educational simulation. It is not a substitute for supervised laboratory work or calibrated laboratory instruments.
+## Safety
+This is an educational visual simulation, not a physical laboratory or a validated chemical procedure. Never use real chemicals based only on this site.
