@@ -208,7 +208,7 @@ function pourReagent(which,ml){
 function resize(){if(!renderer)return;let w=$('scene').clientWidth,h=$('scene').clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
 function animate(){requestAnimationFrame(animate);if(flame){flame.scale.y=1+Math.sin(Date.now()*.009)*.1;flame.scale.x=1+Math.sin(Date.now()*.013)*.1}renderer.render(scene,camera)}
 function run(){
- const need=current===0?(added.includes('লিটমাস')&& (added.includes('HCl')||added.includes('NaOH'))?[]:['লিটমাস','HCl অথবা NaOH']):current===1?['HCl','জিঙ্ক']:current===2?['HCl','NaOH']:current===3?['CO₂','চুনের পানি']:current===4?['CuSO₄','লোহা']:['বালি','পানি'];
+ const need=current===0?(added.includes('লিটমাস')&& (added.includes('HCl')||added.includes('NaOH'))?[]:['লিটমাস','HCl অথবা NaOH']):current===1?['HCl','জিঙ্ক']:current===2?['HCl','NaOH']:current===3?['CO₂','চুনের পানি']:current===4?['CuSO₄','লোহা']:current===5?['বালি','পানি']:data[current].chem;
  const missing=need.filter(x=>x==='HCl অথবা NaOH'?!added.includes('HCl')&&!added.includes('NaOH'):!added.includes(x));
  if(missing.length){$('observation').textContent=tr('আরও যোগ করতে হবে: ','Still needed: ')+missing.join(', ');return}
  const vol=x=>(reagentVolumes[x]||0)/1000,n=x=>solutionConcentration*vol(x),fmt=x=>(x*1000).toFixed(3)+' mmol';
@@ -219,6 +219,61 @@ function run(){
  if(current===3){const co2=(reagentVolumes['CO₂']||0)/24000,ca=.05*vol('চুনের পানি'),precip=Math.min(co2,ca);color=0xdce6d7;result=tr('CO₂-এর মোল আনুমানিক 24 L/mol মোলার আয়তন ধরে; ','CO₂ estimated using 24 L/mol molar volume; ')+fmt(precip)+tr(' পর্যন্ত CaCO₃ তলানি গঠনের সম্ভাবনা।',' potential CaCO₃ precipitate.')}
  if(current===4){const cu=n('CuSO₄'),fe=.50/55.845,deposited=Math.min(cu,fe);color=0x5b9f80;result=tr('CuSO₄: ','CuSO₄: ')+fmt(cu)+', Fe: 0.500 g ('+fmt(fe)+'). '+tr('তাত্ত্বিকভাবে Cu জমা ≈ ','Theoretical Cu deposition ≈ ')+(deposited*63.546*1000).toFixed(2)+' mg.'}
  if(current===5){color=0xcbb68e;result=tr('এটি রাসায়নিক বিক্রিয়া নয়, ভৌত পৃথকীকরণ। ফিল্টার কণার আকারের ভিত্তিতে বালি আটকে রাখে; দক্ষতা বাস্তব উপকরণের উপর নির্ভর করে。','This is a physical separation, not a chemical reaction. The filter retains sand particles; efficiency depends on the actual material.')}
+ if(current>=6){
+   const temp=temperature,conc=solutionConcentration,objectsFx=[],addFx=(geo,mat,pos)=>{const m=new THREE.Mesh(geo,mat);m.position.copy(pos);scene.add(m);objectsFx.push(m);return m;};
+   const neutral=new THREE.MeshPhysicalMaterial({color:0xd8edf5,transparent:true,opacity:.72,roughness:.12});
+   const start=performance.now(),duration=5200;
+   if(current===6||current===7||current===8||current===14||current===19){
+     const count=current===6?72:current===7?36:current===19?34:44;
+     for(let i=0;i<count;i++){const m=addFx(new THREE.SphereGeometry(current===7?.025:.018+Math.random()*.02,8,8),new THREE.MeshStandardMaterial({color:current===6?0x9b2a92:current===7?0xe8edf0:0xd9f4ff,transparent:current!==7,opacity:.8}),new THREE.Vector3((Math.random()-.5)*.65,1.35+Math.random()*.6,(Math.random()-.5)*.5));m.userData.phase=Math.random()*6.28;}
+   }
+   if(current===9||current===16){
+     const base=addFx(new THREE.BoxGeometry(1.6,.12,.5),new THREE.MeshStandardMaterial({color:0x8b949e,metalness:.55}),new THREE.Vector3(0,1.22,.1));
+     for(let x of [-.48,.48])addFx(new THREE.CylinderGeometry(.07,.07,.72,24),new THREE.MeshStandardMaterial({color:x<0?0x9daeb6:0xb86b43,metalness:.7}),new THREE.Vector3(x,1.62,.1));
+     const led=addFx(new THREE.SphereGeometry(.13,20,16),new THREE.MeshStandardMaterial({color:0x4bff9b,emissive:0x16ff69,emissiveIntensity:current===9&&added.includes('NaCl')||current===16?2:0}),new THREE.Vector3(0,2.25,.1));led.userData.led=true;
+     addFx(new THREE.BoxGeometry(.08,.06,.65),new THREE.MeshStandardMaterial({color:0x263238}),new THREE.Vector3(0,1.94,.1));
+   }
+   if(current===10||current===13){
+     for(let i=0;i<18;i++){const crystal=addFx(new THREE.BoxGeometry(.09,.09,.09),new THREE.MeshStandardMaterial({color:current===13?0x2878c8:0xf4f5ed,metalness:.08,roughness:.22}),new THREE.Vector3((Math.random()-.5)*.55,1.3+Math.random()*.1,(Math.random()-.5)*.4));crystal.rotation.set(Math.random(),Math.random(),Math.random());}
+   }
+   if(current===11||current===12||current===18){
+     const sample=addFx(new THREE.CylinderGeometry(.22,.22,.6,32),new THREE.MeshPhysicalMaterial({color:current===18?0xe8b84c:0x91c9e2,transparent:true,opacity:.5}),new THREE.Vector3(0,1.58,.15));
+     sample.scale.set(1,1,1);
+   }
+   if(current===17){
+     const precipColor=added.includes('CuSO₄')?0x4c75db:0x8cbd85;
+     for(let i=0;i<48;i++)addFx(new THREE.SphereGeometry(.018+Math.random()*.025,8,8),new THREE.MeshStandardMaterial({color:precipColor,roughness:.9}),new THREE.Vector3((Math.random()-.5)*.42,1.35+Math.random()*.45,(Math.random()-.5)*.35));
+   }
+   if(current===20){
+     addFx(new THREE.SphereGeometry(.36,32,20),new THREE.MeshPhysicalMaterial({color:0xf2e7cb,transparent:true,opacity:.68,roughness:.25}),new THREE.Vector3(0,1.5,.1));
+     for(let i=0;i<12;i++)addFx(new THREE.SphereGeometry(.04,12,8),new THREE.MeshStandardMaterial({color:0xf9f2df}),new THREE.Vector3((Math.random()-.5)*.4,1.5+Math.random()*.25,(Math.random()-.5)*.35));
+   }
+   const step=now=>{
+     const t=Math.min(1,(now-start)/duration);
+     objectsFx.forEach((m,i)=>{
+       if(m.userData.phase!==undefined){if(current===6)m.position.x+=Math.sin(now*.0015+m.userData.phase)*.0015*(1+temp/40);else if(current===7){m.position.y+=.0025;m.material.opacity=Math.max(0,.82-t*.9)}else if(current===8||current===14||current===19)m.position.y+=.004+(conc*.003);}
+       if(m.userData.led){m.material.emissiveIntensity=(current===9&&!added.includes('NaCl')?0:.5+Math.abs(Math.sin(now*.012))*2.5);}
+       if(current===10||current===13){m.rotation.y+=.003;m.position.y+=Math.sin(now*.002+i)*.0005;}
+     });
+     if(t<1)requestAnimationFrame(step);
+     else objectsFx.forEach(m=>{scene.remove(m);m.geometry.dispose();if(Array.isArray(m.material))m.material.forEach(x=>x.dispose());else m.material.dispose();});
+   };requestAnimationFrame(step);
+   if(current===6)result+=tr('তাপমাত্রা '+temp+'°C: তাপমাত্রা বাড়লে ব্যাপন দ্রুত হয়।','Temperature '+temp+'°C: diffusion accelerates as temperature rises.');
+   if(current===7)result+=tr('উত্তাপ ও শীতল পৃষ্ঠে পুনঃজমার ধাপ দেখানো হয়েছে।','Heating and deposition on a cool surface are illustrated.');
+   if(current===8)result+=tr('CO₂ গ্যাসের বুদবুদ ও limewater test দেখানো হয়েছে।','CO₂ bubbles and the limewater test are illustrated.');
+   if(current===9)result+=tr(added.includes('NaCl')?'আয়ন চলাচলের কারণে বর্তনীতে LED জ্বলছে।':'নির্বাচিত দ্রবণে LED জ্বলার জন্য পর্যাপ্ত আয়ন নেই।','The LED glows when mobile ions are present.');
+   if(current===10)result+=tr('বাষ্পীভবন ও শীতলীকরণের পর NaCl স্ফটিক গঠনের মডেল।','Model of NaCl crystal growth after evaporation and cooling.');
+   if(current===11)result+=tr('দ্রাব্যতা ও দ্রবীভূত কণার আয়নিক প্রকৃতি তুলনা করো।','Compare solubility and ionic nature of dissolved particles.');
+   if(current===12)result+=tr('C = n/V; n = m/Mᵣ সূত্র দিয়ে মোলার ঘনমাত্রা নির্ণয় করো।','Calculate molarity with C = n/V and n = m/Mᵣ.');
+   if(current===13)result+=tr('নীল hydrated salt উত্তাপে সাদা হয়; পানি যোগে নীল রং ফিরে আসে।','Hydrated blue salt turns white on heating; water restores the blue color.');
+   if(current===14)result+=tr('ঘনমাত্রা ও তাপমাত্রা বৃদ্ধিতে গ্যাস উৎপাদনের হার বাড়ে।','Higher concentration and temperature increase gas production rate.');
+   if(current===15)result+=tr('বিউরেট, পিপেট ও indicator ব্যবহার করে endpoint নির্ণয়ের ধাপ।','Use burette, pipette and indicator to identify the endpoint.');
+   if(current===16)result+=tr('গ্যালভানিক সেলের আদর্শ বিভব প্রায় 1.10 V।','The ideal cell potential is approximately 1.10 V.');
+   if(current===17)result+=tr('ধাতব আয়ন অনুযায়ী ভিন্ন রঙের hydroxide তলানি তৈরি হয়।','Different metal ions form hydroxide precipitates of characteristic colors.');
+   if(current===18)result+=tr('নমুনার pH অনুযায়ী indicator-এর রং তুলনা করো।','Compare indicator colors according to sample pH.');
+   if(current===19)result+=tr('অ্যামোনিয়া ভেজা লাল লিটমাসকে নীল করে।','Ammonia turns moist red litmus blue.');
+   if(current===20)result+=tr('স্যাপোনিফিকেশনে glycerol ও fatty-acid sodium salts তৈরি হয়।','Saponification produces glycerol and sodium salts of fatty acids.');
+ }
  const action=$('action').value;
  const hud=$('reactionHud');hud.innerHTML='<b>'+tr('বিক্রিয়া চলছে','REACTION IN PROGRESS')+'</b><span>'+tr('বিকারের ভেতরে পরিবর্তন লক্ষ্য করুন।','Watch the visible changes inside the beaker.')+'</span>';
  const animateColor=(mesh,to,duration=1500)=>{const from=mesh.material.color.clone(),end=new THREE.Color(to),start=performance.now();const step=now=>{const t=Math.min(1,(now-start)/duration);mesh.material.color.copy(from).lerp(end,t);if(t<1)requestAnimationFrame(step)};requestAnimationFrame(step)};
