@@ -139,7 +139,7 @@ function pourReagent(which,ml){
  const solid=['জিঙ্ক','লোহা','বালি','ফিল্টার'].includes(which);
  const dropMode=$('action').value==='drop';
  const duration=dropMode?1250:1400+ml*7;
- const target=new THREE.Vector3(.02,1.78,.02);
+ const target=new THREE.Vector3(.02,solid?1.42:1.27+(.08+liquidVolume/100*.54)+.035,.02);
  const colors={'HCl':0xd6e9f6,'NaOH':0xe8f0f2,'লিটমাস':0xb34f9c,'জিঙ্ক':0x9daeb6,'পানি':0x7dc9e7,'সূচক':0xc65b8b,'CO₂':0xd7eff4,'চুনের পানি':0xe5edcf,'CuSO₄':0x298de0,'লোহা':0x9c9b8e,'বালি':0xc9a66b,'ফিল্টার':0xf3f0dc};
  const color=colors[which]||0x65c7e0;
  labelCtx.clearRect(0,0,512,256);labelCtx.fillStyle='#f7f7ef';labelCtx.fillRect(0,0,512,256);labelCtx.strokeStyle='#263b45';labelCtx.lineWidth=8;labelCtx.strokeRect(5,5,502,246);labelCtx.fillStyle='#172b35';labelCtx.textAlign='center';labelCtx.font='bold 48px sans-serif';labelCtx.fillText(which,256,100);const formulas={'HCl':'Hydrochloric acid','NaOH':'Sodium hydroxide','CuSO₄':'Copper sulfate','পানি':'Water','লিটমাস':'Litmus indicator','চুনের পানি':'Limewater','CO₂':'Carbon dioxide','জিঙ্ক':'Zinc','লোহা':'Iron','বালি':'Sand','সূচক':'Indicator','ফিল্টার':'Filter'};labelCtx.font='26px sans-serif';labelCtx.fillText(formulas[which]||'SSC Chemistry Lab',256,158);bottleLabelTexture.needsUpdate=true;
@@ -150,7 +150,7 @@ function pourReagent(which,ml){
    const mid=new THREE.Vector3((origin.x+target.x)/2,Math.max(origin.y,target.y)-.16,(origin.z+target.z)/2);
    pourCurve=new THREE.QuadraticBezierCurve3(origin,mid,target);
    streamMat=new THREE.MeshStandardMaterial({color,metalness:0,roughness:.12,transparent:true,opacity:.82,emissive:color,emissiveIntensity:.12,depthWrite:false});
-   streamMat.onBeforeCompile=shader=>{shader.uniforms.uPourTime={value:0};streamMat.userData.shader=shader;shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nuniform float uPourTime;').replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.x += sin(uv.y*18.0 + uPourTime*7.0)*0.012;\ntransformed.z += cos(uv.y*14.0 + uPourTime*6.0)*0.009;');};
+   streamMat.onBeforeCompile=shader=>{shader.uniforms.uPourTime={value:0};streamMat.userData.shader=shader;shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nuniform float uPourTime;').replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.x += sin(uv.x*18.0 + uPourTime*7.0)*0.012;\ntransformed.z += cos(uv.x*14.0 + uPourTime*6.0)*0.009;');};
    stream=new THREE.Mesh(new THREE.TubeGeometry(pourCurve,64,.019,12,false),streamMat);scene.add(stream);
    for(let i=0;i<4;i++){const bead=new THREE.Mesh(new THREE.SphereGeometry(.022,10,8),new THREE.MeshPhysicalMaterial({color,transparent:true,opacity:.72,roughness:.08}));scene.add(bead);dropEffects.push(bead);}
    ripple=new THREE.Mesh(new THREE.TorusGeometry(.16,.009,8,40),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.55}));ripple.rotation.x=Math.PI/2;ripple.position.set(target.x,1.79,target.z);scene.add(ripple);
