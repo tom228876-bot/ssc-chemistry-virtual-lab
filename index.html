@@ -145,13 +145,13 @@ function pourReagent(which,ml){
  labelCtx.clearRect(0,0,512,256);labelCtx.fillStyle='#f7f7ef';labelCtx.fillRect(0,0,512,256);labelCtx.strokeStyle='#263b45';labelCtx.lineWidth=8;labelCtx.strokeRect(5,5,502,246);labelCtx.fillStyle='#172b35';labelCtx.textAlign='center';labelCtx.font='bold 48px sans-serif';labelCtx.fillText(which,256,100);const formulas={'HCl':'Hydrochloric acid','NaOH':'Sodium hydroxide','CuSO₄':'Copper sulfate','পানি':'Water','লিটমাস':'Litmus indicator','চুনের পানি':'Limewater','CO₂':'Carbon dioxide','জিঙ্ক':'Zinc','লোহা':'Iron','বালি':'Sand','সূচক':'Indicator','ফিল্টার':'Filter'};labelCtx.font='26px sans-serif';labelCtx.fillText(formulas[which]||'SSC Chemistry Lab',256,158);bottleLabelTexture.needsUpdate=true;
  if(bottle&&!dropMode){bottle.rotation.z=.58;bottle.updateMatrixWorld(true);if(bottleCapMesh)bottleCapMesh.visible=false;}
  const origin=dropMode?new THREE.Vector3(.42,2.72,.18):(bottle?bottle.localToWorld(new THREE.Vector3(0,.79,0)):new THREE.Vector3(2.72,2.28,-.6));
- let stream=null,streamMat=null,ripple=null,dropEffects=[];
+ let stream=null,streamMat=null,ripple=null,dropEffects=[],pourCurve=null;
  if(!solid&&!dropMode){
    const mid=new THREE.Vector3((origin.x+target.x)/2,Math.max(origin.y,target.y)-.16,(origin.z+target.z)/2);
-   const curve=new THREE.QuadraticBezierCurve3(origin,mid,target);
+   pourCurve=new THREE.QuadraticBezierCurve3(origin,mid,target);
    streamMat=new THREE.MeshStandardMaterial({color,metalness:0,roughness:.12,transparent:true,opacity:.82,emissive:color,emissiveIntensity:.12,depthWrite:false});
    streamMat.onBeforeCompile=shader=>{shader.uniforms.uPourTime={value:0};streamMat.userData.shader=shader;shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nuniform float uPourTime;').replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.x += sin(uv.y*18.0 + uPourTime*7.0)*0.012;\ntransformed.z += cos(uv.y*14.0 + uPourTime*6.0)*0.009;');};
-   stream=new THREE.Mesh(new THREE.TubeGeometry(curve,64,.019,12,false),streamMat);scene.add(stream);
+   stream=new THREE.Mesh(new THREE.TubeGeometry(pourCurve,64,.019,12,false),streamMat);scene.add(stream);
    for(let i=0;i<4;i++){const bead=new THREE.Mesh(new THREE.SphereGeometry(.022,10,8),new THREE.MeshPhysicalMaterial({color,transparent:true,opacity:.72,roughness:.08}));scene.add(bead);dropEffects.push(bead);}
    ripple=new THREE.Mesh(new THREE.TorusGeometry(.16,.009,8,40),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.55}));ripple.rotation.x=Math.PI/2;ripple.position.set(target.x,1.79,target.z);scene.add(ripple);
  }
@@ -167,7 +167,9 @@ function pourReagent(which,ml){
  const start=performance.now();
  const tick=now=>{
    const t=Math.min(1,(now-start)/duration);
-   if(streamMat){streamMat.opacity=.62+Math.sin(now*.035)*.12;stream.visible=t>.015&&t<.98;if(streamMat.userData.shader)streamMat.userData.shader.uniforms.uPourTime.value=now*.001;}\n   dropEffects.forEach((bead,i)=>{const u=(t+i*.17)%1;bead.position.copy(curve.getPoint(u));bead.scale.setScalar(.65+.35*Math.sin(now*.02+i));});\n   if(ripple){const k=(t*2.8)%1;ripple.scale.setScalar(.7+k*1.8);ripple.material.opacity=.5*(1-k);}
+   if(streamMat){streamMat.opacity=.62+Math.sin(now*.035)*.12;stream.visible=t>.015&&t<.98;if(streamMat.userData.shader)streamMat.userData.shader.uniforms.uPourTime.value=now*.001}
+   dropEffects.forEach((bead,i)=>{const u=(t+i*.17)%1;bead.position.copy(pourCurve.getPoint(u));bead.scale.setScalar(.65+.35*Math.sin(now*.02+i));});
+   if(ripple){const k=(t*2.8)%1;ripple.scale.setScalar(.7+k*1.8);ripple.material.opacity=.5*(1-k);}
    particles.forEach((p,i)=>{
      const delay=dropMode?i*.16:Math.random()*.08;
      const u=Math.max(0,Math.min(1,(t-delay)/(1-delay)));
@@ -179,7 +181,8 @@ function pourReagent(which,ml){
    });
    if(t<1)requestAnimationFrame(tick);
    else{
-     if(stream){scene.remove(stream);stream.geometry.dispose();streamMat.dispose();}\n     dropEffects.forEach(p=>{scene.remove(p);p.geometry.dispose();p.material.dispose()});if(ripple){scene.remove(ripple);ripple.geometry.dispose();ripple.material.dispose();}
+     if(stream){scene.remove(stream);stream.geometry.dispose();streamMat.dispose();}
+     dropEffects.forEach(p=>{scene.remove(p);p.geometry.dispose();p.material.dispose()});if(ripple){scene.remove(ripple);ripple.geometry.dispose();ripple.material.dispose();}
      particles.forEach(p=>{scene.remove(p);p.geometry.dispose()});
      if(bottle){bottle.rotation.z=0;bottle.updateMatrixWorld(true);if(bottleCapMesh)bottleCapMesh.visible=true;}
      if(!solid){liquidVolume=Math.min(100,liquidVolume+ml);const h=.08+liquidVolume/100*.54;liquid.scale.y=h;liquid.position.y=1.27+h/2;if(meniscus)meniscus.position.y=1.27+h;}
