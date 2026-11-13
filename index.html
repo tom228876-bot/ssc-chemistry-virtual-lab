@@ -301,13 +301,24 @@ function pushApparatusInContact(movingGroup,previousPosition,nextPosition){
  const dirX=dx/travel,dirZ=dz/travel,sourceRadius=apparatusContactRadius(movingGroup);
  for(const [otherGroup,otherPb] of physicsBodies){
   if(otherGroup===movingGroup||otherPb.dragging||!otherPb.body.isDynamic())continue;
-  const p=otherPb.body.translation(),vx=p.x-nextPosition.x,vz=p.z-nextPosition.z;
+  // Test the whole pointer-move segment, not only its endpoint. Fast pointer
+  // events can otherwise teleport the kinematic body past a small beaker.
+  const p=otherPb.body.translation();
+  const relX=p.x-previousPosition.x,relZ=p.z-previousPosition.z;
+  const t=THREE.MathUtils.clamp((relX*dx+relZ*dz)/(travel*travel),0,1);
+  const closestX=previousPosition.x+dx*t,closestZ=previousPosition.z+dz*t;
+  const vx=p.x-closestX,vz=p.z-closestZ;
   const distance=Math.hypot(vx,vz),limit=sourceRadius+apparatusContactRadius(otherGroup);
   if(distance>limit||distance<.0001)continue;
-  const toward=dirX*(vx/distance)+dirZ*(vz/distance);
-  if(toward<=.12)continue;
+  const toward=dirX*(p.x-previousPosition.x)+dirZ*(p.z-previousPosition.z);
+  if(toward<-.02)continue;
+  // Prevent a single sustained overlap from adding an impulse on every
+  // pointer event while still allowing repeated physical pushes.
+  const now=performance.now();
+  if(otherPb.lastDragContactAt&&now-otherPb.lastDragContactAt<85)continue;
+  otherPb.lastDragContactAt=now;
   const penetration=Math.max(0,limit-distance);
-  const impulse=Math.min(.85,travel*24+penetration*.65);
+  const impulse=Math.min(1.35,Math.max(.28,travel*10+penetration*1.5));
   otherPb.body.wakeUp();
   otherPb.body.applyImpulse({x:dirX*impulse,y:0,z:dirZ*impulse},true);
  }
