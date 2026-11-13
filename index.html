@@ -249,13 +249,26 @@ function createPhysicsBody(group,name){
  const collider=RAPIER.ColliderDesc.cuboid(ext,.34,ext).setTranslation(0,.34,0).setFriction(.72).setRestitution(.08);
  physicsWorld.createCollider(collider,body);physicsBodies.set(group,{body,dragging:false});
 }
+function hideProceduralFallback(group){
+ (group.userData.fallbackChildren||[]).forEach(o=>{if(!o.userData.isApparatusLabel)o.visible=false;});
+}
 function loadApparatusGLB(name,group){
- const entry=glbAssetManifest[name];if(!entry||group.userData.glbLoading||group.userData.glbLoaded)return;const asset=typeof entry==='string'?entry:entry.url;const assetUrl=asset.startsWith('http')?asset:glbAssetRoot+asset;const assetScale=typeof entry==='string'?1:(entry.scale||1);
+ const entry=glbAssetManifest[name];if(!entry||group.userData.glbLoading||group.userData.glbLoaded)return;
+ const asset=typeof entry==='string'?entry:entry.url;
+ const assetUrl=asset.startsWith('http')?asset:glbAssetRoot+asset;
+ const assetScale=typeof entry==='string'?1:(entry.scale||1);
  group.userData.glbLoading=true;
- if(glbCache.has(asset)){const model=glbCache.get(asset).clone(true);group.userData.fallbackChildren?.forEach(o=>o.visible=false);group.userData.fallbackChildren?.forEach(o=>o.visible=false);group.add(model);group.userData.glbLoaded=true;group.userData.glbLoading=false;return;}
+ if(glbCache.has(assetUrl)){
+  const model=glbCache.get(assetUrl).clone(true);
+  model.scale.setScalar(assetScale);
+  hideProceduralFallback(group);
+  group.add(model);group.userData.glbLoaded=true;group.userData.glbLoading=false;return;
+ }
  gltfLoader.load(assetUrl,gltf=>{
-  glbCache.set(assetUrl,gltf.scene);const model=gltf.scene.clone(true);model.scale.setScalar(assetScale);
+  glbCache.set(assetUrl,gltf.scene);
+  const model=gltf.scene.clone(true);model.scale.setScalar(assetScale);
   model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){o.material=o.material.clone();if(o.material.roughness===undefined)o.material.roughness=.32;}}});
+  hideProceduralFallback(group);
   group.add(model);group.userData.glbLoaded=true;group.userData.glbLoading=false;
  },undefined,error=>{group.userData.glbLoading=false;group.userData.glbLoadError=String(error?.message||error);console.info('Optional GLB asset unavailable; procedural model retained:',name);});
 }
@@ -311,7 +324,7 @@ function spawnApparatus(name){
   box(.54,.20,.40,whiteMat,0,-.10,0);box(.48,.035,.34,steelMat,0,.02,0);
   if(/screen|voltmeter|conductivity|electroscope/.test(n)){box(.32,.15,.018,darkMat,0,.10,.205);box(.22,.05,.012,new THREE.MeshBasicMaterial({color:0x72d8aa}),0,.10,.22)}
  }
- const labelCanvas=document.createElement('canvas');labelCanvas.width=512;labelCanvas.height=128;const ctx=labelCanvas.getContext('2d');ctx.fillStyle='rgba(255,255,255,.94)';ctx.fillRect(0,0,512,128);ctx.fillStyle='#172b35';ctx.font='bold 32px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(name.length>25?name.slice(0,24)+'…':name,256,64);const tex=new THREE.CanvasTexture(labelCanvas);const label=new THREE.Mesh(new THREE.PlaneGeometry(.82,.15),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide}));label.position.set(0,.48,.02);g.add(label);
+ const labelCanvas=document.createElement('canvas');labelCanvas.width=512;labelCanvas.height=128;const ctx=labelCanvas.getContext('2d');ctx.fillStyle='rgba(255,255,255,.94)';ctx.fillRect(0,0,512,128);ctx.fillStyle='#172b35';ctx.font='bold 32px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(name.length>25?name.slice(0,24)+'…':name,256,64);const tex=new THREE.CanvasTexture(labelCanvas);const label=new THREE.Mesh(new THREE.PlaneGeometry(.82,.15),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide}));label.userData.isApparatusLabel=true;label.position.set(0,.48,.02);g.add(label);
  g.userData.fallbackChildren=[...g.children];scene.add(g);objects[key]=g;spawnedApparatus.push(g);createPhysicsBody(g,name);loadApparatusGLB(name,g);chosen=name;$('selected').textContent=name;setSelectedApparatus(g);return g;
 }
 function updateTitrationUI(){const active=titrationState.active,open=titrationState.valveOpen;const r=$('titrationReading'),p=$('titrationPH'),d=$('titrationDelivered'),v=$('valveToggle'),one=$('addOneMl'),tenth=$('addTenthMl');if(!r)return;r.textContent=titrationState.titrantVolumeMl.toFixed(2)+' mL';d.textContent=titrationState.titrantVolumeMl.toFixed(2)+' mL';const h=titrationState.acidConcentration*titrationState.acidVolumeMl/1000,o=titrationState.titrantConcentration*titrationState.titrantVolumeMl/1000,total=(titrationState.acidVolumeMl+titrationState.titrantVolumeMl)/1000,excess=h-o,ph=excess>1e-12?-Math.log10(excess/total):excess< -1e-12?14+Math.log10(-excess/total):7;p.textContent=active?ph.toFixed(2):'—';v.disabled=!active;one.disabled=!active||!open||titrationState.endpoint;tenth.disabled=!active||!open||titrationState.endpoint;v.textContent=open?'ট্যাপ বন্ধ করুন':'ট্যাপ খুলুন';if(active&&titrationState.endpoint){$('titrationStatus').textContent='Endpoint অতিক্রান্ত। NaOH ব্যবহৃত '+titrationState.titrantVolumeMl.toFixed(2)+' mL; C₁V₁=C₂V₂ অনুযায়ী HCl-এর আনুমানিক ঘনমাত্রা '+(titrationState.titrantConcentration*titrationState.titrantVolumeMl/titrationState.acidVolumeMl).toFixed(3)+' mol/L।';}}
