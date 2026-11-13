@@ -244,23 +244,36 @@ function clearSpawnedApparatus(){setSelectedApparatus(null);for(const g of spawn
 function createPhysicsBody(group,name){
  if(!physicsWorld||physicsBodies.has(group))return;
  const n=name.toLowerCase();
- const bodyDesc=RAPIER.RigidBodyDesc.dynamic().setTranslation(group.position.x,group.position.y,group.position.z).setLinearDamping(2.4).setAngularDamping(3.2).setCanSleep(true);
+ const bodyDesc=RAPIER.RigidBodyDesc.dynamic()
+  .setTranslation(group.position.x,group.position.y,group.position.z)
+  .setLinearDamping(3.6).setAngularDamping(5.0).setCanSleep(true).setCcdEnabled(true);
  const body=physicsWorld.createRigidBody(bodyDesc);
- // Local collider profiles follow the procedural apparatus dimensions instead of
- // assigning the same oversized cube to every glass vessel and instrument.
+ // Collider dimensions are expressed in the same local coordinates as the
+ // procedural meshes. Low restitution prevents apparatus from bouncing away.
  const profiles=[
-  [/retort stand|tripod stand/,()=>RAPIER.ColliderDesc.cuboid(.37,.07,.24).setTranslation(0,.05,0)],
-  [/burette/,()=>RAPIER.ColliderDesc.cuboid(.10,.73,.10).setTranslation(0,1.0,0)],
-  [/microscope/,()=>RAPIER.ColliderDesc.cuboid(.27,.34,.20).setTranslation(0,.18,0)],
-  [/beaker|test tube|tube|measuring cylinder|graduated cylinder|funnel|pipette|dropper/,()=>RAPIER.ColliderDesc.cylinder(.25,.16).setTranslation(0,.02,0)],
-  [/conical flask|erlenmeyer|flask|volumetric flask/,()=>RAPIER.ColliderDesc.cylinder(.31,.27).setTranslation(0,.31,0)],
+  [/retort stand|tripod stand/,()=>RAPIER.ColliderDesc.cuboid(.34,.045,.21).setTranslation(0,.05,0)],
+  [/burette/,()=>RAPIER.ColliderDesc.cuboid(.055,.72,.055).setTranslation(0,1.0,0)],
+  [/microscope/,()=>RAPIER.ColliderDesc.cuboid(.25,.055,.18).setTranslation(0,-.20,0)],
+  [/beaker|test tube|tube|measuring cylinder|graduated cylinder|funnel|pipette|dropper/,()=>RAPIER.ColliderDesc.cylinder(.21,.16).setTranslation(0,.02,0)],
+  [/conical flask|erlenmeyer|flask|volumetric flask/,()=>RAPIER.ColliderDesc.cylinder(.29,.27).setTranslation(0,.31,0)],
   [/burner|heater|hot plate/,()=>RAPIER.ColliderDesc.cylinder(.13,.14).setTranslation(0,-.02,0)],
   [/thermometer|rod|electrode|wire/,()=>RAPIER.ColliderDesc.cylinder(.34,.035).setTranslation(0,.05,0)],
   [/caliper|screw gauge|micrometer|ruler|scale/,()=>RAPIER.ColliderDesc.cuboid(.34,.10,.10).setTranslation(0,-.04,0)]
  ];
  const profile=profiles.find(([re])=>re.test(n));
- const collider=(profile?profile[1]():RAPIER.ColliderDesc.cuboid(.25,.18,.20).setTranslation(0,.02,0)).setFriction(.72).setRestitution(.04);
- physicsWorld.createCollider(collider,body);
+ const baseCollider=(profile?profile[1]():RAPIER.ColliderDesc.cuboid(.25,.18,.20).setTranslation(0,.02,0))
+  .setFriction(.9).setRestitution(.015).setDensity(1.0);
+ physicsWorld.createCollider(baseCollider,body);
+ // Add the missing upright parts to compound apparatus colliders so tall
+ // stands and microscopes cannot visually pass through nearby equipment.
+ if(/retort stand|tripod stand/.test(n)){
+  physicsWorld.createCollider(RAPIER.ColliderDesc.cuboid(.035,1.32,.035).setTranslation(-.18,1.38,0).setFriction(.9).setRestitution(.015),body);
+  physicsWorld.createCollider(RAPIER.ColliderDesc.cuboid(.25,.023,.028).setTranslation(.12,2.18,0).setFriction(.9).setRestitution(.015),body);
+ }else if(/microscope/.test(n)){
+  physicsWorld.createCollider(RAPIER.ColliderDesc.cuboid(.05,.28,.05).setTranslation(-.13,.08,0).setFriction(.9).setRestitution(.015),body);
+  physicsWorld.createCollider(RAPIER.ColliderDesc.cuboid(.18,.045,.05).setTranslation(.02,.18,0).setFriction(.9).setRestitution(.015),body);
+  physicsWorld.createCollider(RAPIER.ColliderDesc.cylinder(.055,.065).setTranslation(.06,.39,0).setFriction(.9).setRestitution(.015),body);
+ }
  physicsBodies.set(group,{body,dragging:false,bodyType:'dynamic'});
 }
 function syncApparatusPhysicsPose(group,pb){
