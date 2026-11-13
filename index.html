@@ -460,7 +460,7 @@ if(labInitError){const notice=document.createElement('div');notice.style.cssText
 camera.position.set(9.2,7.4,13.2);controls.target.set(0,2.4,-.35);camera.lookAt(controls.target);controls.update();
 resize();window.__labDebug=()=>({children:scene.children.length,meshes:scene.children.filter(o=>o.isMesh).length,camera:camera.position.toArray(),target:controls.target.toArray(),canvas:renderer.domElement.getBoundingClientRect().toJSON(),render:renderer.info.render});
 window.__runFullLabQA=async()=>{
- const rows=[],wait=ms=>new Promise(resolve=>setTimeout(resolve,ms)),qaSubject=new URLSearchParams(location.search).get('qa'),categoriesToRun=qaSubject.startsWith('physics')?['physics']:qaSubject.startsWith('biology')?['biology']:['chemistry','physics','biology'],qaStartIndex=qaSubject==='physics-tail'?11:qaSubject==='biology-b'?7:0,qaEndIndex=qaSubject==='physics-tail'?15:qaSubject==='biology-a'?7:99,totalExpected=qaSubject==='physics-tail'?4:qaSubject==='biology-a'?7:qaSubject==='biology-b'?6:categoriesToRun.reduce((n,c)=>n+(c==='chemistry'?21:c==='physics'?15:13),0);
+ const rows=[],wait=ms=>new Promise(resolve=>setTimeout(resolve,ms)),qaSubject=new URLSearchParams(location.search).get('qa'),categoriesToRun=qaSubject==='globals'?[]:qaSubject.startsWith('physics')?['physics']:qaSubject.startsWith('biology')?['biology']:['chemistry','physics','biology'],qaStartIndex=qaSubject==='physics-tail'?11:qaSubject==='biology-b'?7:0,qaEndIndex=qaSubject==='physics-tail'?15:qaSubject==='biology-a'?7:99,totalExpected=qaSubject==='globals'?0:qaSubject==='physics-tail'?4:qaSubject==='biology-a'?7:qaSubject==='biology-b'?6:categoriesToRun.reduce((n,c)=>n+(c==='chemistry'?21:c==='physics'?15:13),0);
  const panel=document.createElement('pre');panel.id='lab-qa-report';
  panel.style.cssText='position:fixed;z-index:99999;left:12px;right:12px;bottom:12px;max-height:42vh;overflow:auto;background:#fff;color:#111;border:2px solid #111;border-radius:10px;padding:12px;font:12px/1.45 monospace;white-space:pre-wrap;box-shadow:0 8px 32px #0005';
  document.body.appendChild(panel);window.__qaFastMode=true;
@@ -499,10 +499,19 @@ window.__runFullLabQA=async()=>{
    update();await wait(8);
   }
  }
+ const globalControls={};
+ try{
+  const waterBefore=$('water').textContent;$('water').click();const waterOn=$('water').textContent,waterOnObservation=$('observation').textContent;$('water').click();const waterOff=$('water').textContent;
+  globalControls.water={on:waterOn!==waterBefore&&waterOnObservation.includes('পানি প্রবাহিত'),off:waterOff.includes('চালু')};
+  const hoodBefore=$('hood').textContent;$('hood').click();const hoodOn=$('hood').textContent,hoodOnObservation=$('observation').textContent;$('hood').click();const hoodOff=$('hood').textContent;
+  globalControls.hood={on:hoodOn!==hoodBefore&&hoodOnObservation.includes('Fume Hood'),off:hoodOff===hoodBefore};
+  const startZoom=camera.position.distanceTo(controls.target);$('plus').click();const zoomIn=camera.position.distanceTo(controls.target);$('minus').click();const zoomOut=camera.position.distanceTo(controls.target);$('home').click();
+  globalControls.zoomIn=zoomIn<startZoom;globalControls.zoomOut=zoomOut>zoomIn;globalControls.home=camera.position.distanceTo(new THREE.Vector3(8.8,7.1,12.5))<.001;
+ }catch(err){globalControls.error=String(err)}
  window.__qaFastMode=false;$('categoryPicker').value='chemistry';$('categoryPicker').dispatchEvent(new Event('change',{bubbles:true}));select(0);
- window.__labQAResults=rows;window.__labQASummary={total:rows.length,passed:rows.filter(x=>x.pass).length,failed:rows.filter(x=>!x.pass).length,failures:rows.filter(x=>!x.pass)};
+ window.__labQAResults=rows;window.__labQASummary={total:rows.length,passed:rows.filter(x=>x.pass).length,failed:rows.filter(x=>!x.pass).length,failures:rows.filter(x=>!x.pass),globalControls,globalControlsPassed:Object.values(globalControls).filter(v=>v===true||v&&typeof v==='object'&&Object.values(v).every(Boolean)).length};
  panel.style.maxHeight='80vh';panel.textContent='FINAL REPORT\n'+JSON.stringify(window.__labQASummary,null,2)+'\n\n'+JSON.stringify(rows,null,2);
  return window.__labQASummary;
 };
-if(['full','physics','biology','physics-tail','biology-a','biology-b'].includes(new URLSearchParams(location.search).get('qa'))){const startQA=()=>{if(!window.__labQAStarted){window.__labQAStarted=true;window.__runFullLabQA();}};if(document.readyState==='complete')setTimeout(startQA,900);else window.addEventListener('load',()=>setTimeout(startQA,900),{once:true});}
+if(['full','physics','biology','physics-tail','biology-a','biology-b','globals'].includes(new URLSearchParams(location.search).get('qa'))){const startQA=()=>{if(!window.__labQAStarted){window.__labQAStarted=true;window.__runFullLabQA();}};if(document.readyState==='complete')setTimeout(startQA,900);else window.addEventListener('load',()=>setTimeout(startQA,900),{once:true});}
 </script></body></html>
