@@ -460,13 +460,13 @@ if(labInitError){const notice=document.createElement('div');notice.style.cssText
 camera.position.set(9.2,7.4,13.2);controls.target.set(0,2.4,-.35);camera.lookAt(controls.target);controls.update();
 resize();window.__labDebug=()=>({children:scene.children.length,meshes:scene.children.filter(o=>o.isMesh).length,camera:camera.position.toArray(),target:controls.target.toArray(),canvas:renderer.domElement.getBoundingClientRect().toJSON(),render:renderer.info.render});
 window.__runFullLabQA=async()=>{
- const rows=[],wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+ const rows=[],wait=ms=>new Promise(resolve=>setTimeout(resolve,ms)),qaSubject=new URLSearchParams(location.search).get('qa'),categoriesToRun=['physics','biology'].includes(qaSubject)?[qaSubject]:['chemistry','physics','biology'],totalExpected=categoriesToRun.reduce((n,c)=>n+(c==='chemistry'?21:c==='physics'?15:13),0);
  const panel=document.createElement('pre');panel.id='lab-qa-report';
  panel.style.cssText='position:fixed;z-index:99999;left:12px;right:12px;bottom:12px;max-height:42vh;overflow:auto;background:#fff;color:#111;border:2px solid #111;border-radius:10px;padding:12px;font:12px/1.45 monospace;white-space:pre-wrap;box-shadow:0 8px 32px #0005';
  document.body.appendChild(panel);window.__qaFastMode=true;
  const meshCount=()=>{let n=0;scene.traverse(o=>{if(o.isMesh)n++});return n};
- const update=()=>{const passed=rows.filter(x=>x.pass).length;panel.textContent='SSC SCIENCE LAB · FULL PRACTICAL QA\nProgress: '+rows.length+'/49 · PASS '+passed+' · FAIL '+(rows.length-passed)+'\n'+rows.map(x=>(x.pass?'PASS':'FAIL')+' '+x.category.toUpperCase()+' '+x.index+'. '+x.title+' | apparatus '+x.apparatusSelected+'/'+x.apparatus+' | Run '+x.runOK+' | output '+x.observationOK+' | reset '+x.resetOK+(x.error?' | '+x.error:'')).join('\n')};
- for(const cat of ['chemistry','physics','biology']){
+ const update=()=>{const passed=rows.filter(x=>x.pass).length;panel.textContent='SSC SCIENCE LAB · FULL PRACTICAL QA\nProgress: '+rows.length+'/'+totalExpected+' · PASS '+passed+' · FAIL '+(rows.length-passed)+'\n'+rows.map(x=>(x.pass?'PASS':'FAIL')+' '+x.category.toUpperCase()+' '+x.index+'. '+x.title+' | apparatus '+x.apparatusSelected+'/'+x.apparatus+' | Run '+x.runOK+' | output '+x.observationOK+' | reset '+x.resetOK+(x.error?' | '+x.error:'')).join('\n')};
+ for(const cat of categoriesToRun){
   const picker=$('categoryPicker');picker.value=cat;picker.dispatchEvent(new Event('change',{bubbles:true}));await wait(30);
   const items=activeData.slice();
   for(let i=0;i<items.length;i++){
@@ -499,10 +499,10 @@ window.__runFullLabQA=async()=>{
    update();await wait(8);
   }
  }
- window.__qaFastMode=false;select(0);$('categoryPicker').value='chemistry';
+ window.__qaFastMode=false;$('categoryPicker').value='chemistry';$('categoryPicker').dispatchEvent(new Event('change',{bubbles:true}));select(0);
  window.__labQAResults=rows;window.__labQASummary={total:rows.length,passed:rows.filter(x=>x.pass).length,failed:rows.filter(x=>!x.pass).length,failures:rows.filter(x=>!x.pass)};
  panel.style.maxHeight='80vh';panel.textContent='FINAL REPORT\n'+JSON.stringify(window.__labQASummary,null,2)+'\n\n'+JSON.stringify(rows,null,2);
  return window.__labQASummary;
 };
-if(new URLSearchParams(location.search).get('qa')==='full'){const startQA=()=>{if(!window.__labQAStarted){window.__labQAStarted=true;window.__runFullLabQA();}};if(document.readyState==='complete')setTimeout(startQA,900);else window.addEventListener('load',()=>setTimeout(startQA,900),{once:true});}
+if(['full','physics','biology'].includes(new URLSearchParams(location.search).get('qa'))){const startQA=()=>{if(!window.__labQAStarted){window.__labQAStarted=true;window.__runFullLabQA();}};if(document.readyState==='complete')setTimeout(startQA,900);else window.addEventListener('load',()=>setTimeout(startQA,900),{once:true});}
 </script></body></html>
