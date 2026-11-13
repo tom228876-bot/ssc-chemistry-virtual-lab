@@ -21,11 +21,17 @@ await RAPIER.init();
 const gltfLoader=new GLTFLoader();
 const glbAssetRoot='/assets/apparatus/';
 const glbAssetManifest={
- 'Beaker':'beaker.glb','Conical flask':'conical-flask.glb','Erlenmeyer flask':'conical-flask.glb',
- 'Test tube':'test-tube.glb','Burette':'burette.glb','Pipette':'pipette.glb',
- 'Measuring cylinder':'measuring-cylinder.glb','Funnel':'funnel.glb','Microscope':'microscope.glb',
- 'Retort stand':'retort-stand.glb','Tripod stand':'tripod-stand.glb','Thermometer':'thermometer.glb',
- 'Spring balance':'spring-balance.glb','Vernier calipers':'vernier-calipers.glb','Screw gauge':'screw-gauge.glb',
+ 'Beaker':{url:'https://grab3d.com/dl/beaker/beaker.glb',scale:4.8},
+ 'Conical flask':{url:'https://grab3d.com/dl/erlenmeyer-flask/erlenmeyer-flask.glb',scale:4.8},
+ 'Erlenmeyer flask':{url:'https://grab3d.com/dl/erlenmeyer-flask/erlenmeyer-flask.glb',scale:4.8},
+ 'Burette':{url:'https://grab3d.com/dl/burette/burette.glb',scale:2},
+ 'Retort stand':{url:'https://grab3d.com/dl/retort-stand/retort-stand.glb',scale:2},
+ 'Measuring cylinder':{url:'https://grab3d.com/dl/graduated-cylinder/graduated-cylinder.glb',scale:4},
+ 'Funnel':{url:'https://grab3d.com/dl/lab-funnel/lab-funnel.glb',scale:4},
+ 'Pipette':{url:'https://grab3d.com/dl/pipette-set/pipette-set.glb',scale:2},
+ 'Test tube':'test-tube.glb','Microscope':'microscope.glb','Tripod stand':'tripod-stand.glb',
+ 'Thermometer':'thermometer.glb','Spring balance':'spring-balance.glb',
+ 'Vernier calipers':'vernier-calipers.glb','Screw gauge':'screw-gauge.glb',
  'Convex lens':'convex-lens.glb','Concave mirror':'concave-mirror.glb'
 };
 const glbCache=new Map();
@@ -175,11 +181,11 @@ function createPhysicsBody(group,name){
  physicsWorld.createCollider(collider,body);physicsBodies.set(group,{body,dragging:false});
 }
 function loadApparatusGLB(name,group){
- const asset=glbAssetManifest[name];if(!asset||group.userData.glbLoading||group.userData.glbLoaded)return;
+ const entry=glbAssetManifest[name];if(!entry||group.userData.glbLoading||group.userData.glbLoaded)return;const asset=typeof entry==='string'?entry:entry.url;const assetUrl=asset.startsWith('http')?asset:glbAssetRoot+asset;const assetScale=typeof entry==='string'?1:(entry.scale||1);
  group.userData.glbLoading=true;
  if(glbCache.has(asset)){const model=glbCache.get(asset).clone(true);group.userData.fallbackChildren?.forEach(o=>o.visible=false);group.userData.fallbackChildren?.forEach(o=>o.visible=false);group.add(model);group.userData.glbLoaded=true;group.userData.glbLoading=false;return;}
- gltfLoader.load(glbAssetRoot+asset,gltf=>{
-  glbCache.set(asset,gltf.scene);const model=gltf.scene.clone(true);
+ gltfLoader.load(assetUrl,gltf=>{
+  glbCache.set(assetUrl,gltf.scene);const model=gltf.scene.clone(true);model.scale.setScalar(assetScale);
   model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){o.material=o.material.clone();if(o.material.roughness===undefined)o.material.roughness=.32;}}});
   group.add(model);group.userData.glbLoaded=true;group.userData.glbLoading=false;
  },undefined,error=>{group.userData.glbLoading=false;group.userData.glbLoadError=String(error?.message||error);console.info('Optional GLB asset unavailable; procedural model retained:',name);});
