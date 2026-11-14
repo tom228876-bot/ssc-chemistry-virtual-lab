@@ -177,7 +177,7 @@ const apparatusCatalog={
   ['Beaker','Dropper','Litmus strips'],
   ['Test tube','Zinc granules','Dropper','Gas delivery tube'],
   ['Beaker','Measuring cylinder','Dropper','Glass rod'],
-  ['Gas generator flask','Delivery tube','Limewater test tube'],
+  ['Gas generator flask','Delivery tube','Pneumatic trough','Limewater test tube'],
   ['Beaker','Iron nail','Forceps'],
   ['Filter funnel','Filter paper','Conical flask','Glass rod'],
   ['Beakers','Thermometer','Stopwatch','Crystal dish'],
@@ -402,7 +402,29 @@ function spawnApparatus(name){
  const box=(w,h,d,mat,x,y,z)=>add(new THREE.BoxGeometry(w,h,d),mat,x,y,z);
  const torus=(r,t,mat,x,y,z)=>{const m=add(new THREE.TorusGeometry(r,t,10,36),mat,x,y,z);m.rotation.x=Math.PI/2;return m};
  const n=name.toLowerCase();
- if(n==='burette'){cyl(.052,.052,1.42,glassMat,0,1.0,0);const fill=cyl(.034,.034,1.28,liquidMat,0,1.0,0,false);g.userData.liquidMesh=fill;for(let i=0;i<=10;i++){const y=.42+i*.116;box(i%5===0?.11:.055,.009,.012,whiteMat,.065,y,.035)}box(.17,.035,.05,steelMat,0,.22,0);box(.19,.025,.035,redMat,.11,.22,.02);cyl(.018,.018,.20,glassMat,0,.08,0);g.userData.dropOrigin=new THREE.Vector3(0,-.04,0)}
+ if(n==='pneumatic trough'||n==='gas collection trough'){
+  // Water-displacement gas collection: transparent trough, inverted gas jar and submerged delivery tube.
+  const waterMat=new THREE.MeshPhysicalMaterial({color:0x56b8d8,transparent:true,opacity:.38,roughness:.08,metalness:0,depthWrite:false});
+  const troughW=.98,troughD=.68,troughH=.34,wall=.035;
+  box(troughW,.045,troughD,glassMat,0,.045,0);
+  box(troughW,wall,troughD,steelMat,0,.022,0);
+  box(troughW, troughH, wall,glassMat,0,troughH/2,.325);
+  box(troughW, troughH, wall,glassMat,0,troughH/2,-.325);
+  box(wall,troughH,troughD,glassMat,-.472,troughH/2,0);
+  box(wall,troughH,troughD,glassMat,.472,troughH/2,0);
+  box(.89,.018,.59,waterMat,0,.19,0);
+  const jarX=.17,jarZ=0,jarBottom=.23,jarTop=.91,jarR=.135;
+  cyl(jarR,jarR,jarTop-jarBottom,glassMat,jarX,(jarTop+jarBottom)/2,jarZ,true);
+  cyl(jarR*.98,jarR*.98,.012,glassMat,jarX,jarTop,jarZ,false);
+  torus(jarR,.009,glassMat,jarX,jarBottom,jarZ);
+  const gasMat=new THREE.MeshPhysicalMaterial({color:0xe8f8fb,transparent:true,opacity:.19,roughness:.08,side:THREE.DoubleSide});
+  cyl(jarR*.91,jarR*.91,.25,gasMat,jarX,.77,jarZ,false);
+  const tubePoints=[new THREE.Vector3(-.43,.48,.02),new THREE.Vector3(-.25,.48,.02),new THREE.Vector3(-.12,.34,.02),new THREE.Vector3(.02,.24,.02),new THREE.Vector3(.17,.24,.02)];
+  const tubeCurve=new THREE.CatmullRomCurve3(tubePoints);
+  add(new THREE.TubeGeometry(tubeCurve,40,.018,10,false),glassMat,0,0,0);
+  for(let k=0;k<3;k++)add(new THREE.SphereGeometry(.018,12,8),new THREE.MeshBasicMaterial({color:0xe9fbff,transparent:true,opacity:.75}),jarX-.04+k*.04,.52+k*.08,jarZ+.01);
+  g.userData.gasCollection={jarX,jarBottom,jarTop,waterLevel:.19};
+ }else if(n==='burette'){cyl(.052,.052,1.42,glassMat,0,1.0,0);const fill=cyl(.034,.034,1.28,liquidMat,0,1.0,0,false);g.userData.liquidMesh=fill;for(let i=0;i<=10;i++){const y=.42+i*.116;box(i%5===0?.11:.055,.009,.012,whiteMat,.065,y,.035)}box(.17,.035,.05,steelMat,0,.22,0);box(.19,.025,.035,redMat,.11,.22,.02);cyl(.018,.018,.20,glassMat,0,.08,0);g.userData.dropOrigin=new THREE.Vector3(0,-.04,0)}
  else if(n==='conical flask'){const pts=[[0,.025],[.16,.025],[.20,.08],[.34,.50],[.34,.55],[.09,.62],[.075,.79],[.075,.83]].map(p=>new THREE.Vector2(p[0],p[1]));add(new THREE.LatheGeometry(pts,40),glassMat,0,0,0);const solution=cyl(.17,.27,.18,liquidMat,0,.17,0,false);g.userData.solutionLiquid=solution;g.userData.solutionBaseY=.17;torus(.078,.009,glassMat,0,.82,0)}
  else if(n==='retort stand'){box(.68,.09,.42,steelMat,0,.05,0);cyl(.035,.035,2.65,steelMat,-.18,1.38,0);box(.50,.045,.055,steelMat,.12,2.18,0);box(.12,.10,.09,darkMat,.12,2.18,.02)}
  else if(/beaker|test tube|tube|flask|jar|crucible|cylinder|burette|pipette|dropper|funnel|gas syringe|volumetric|limewater|evaporating dish|petri|conical/.test(n)){
