@@ -543,7 +543,11 @@ function pourReagent(which,ml){
  const bottle=objects['Reagent bottle'];
  const solid=['জিঙ্ক','লোহা','বালি'].includes(which),gasMode=which==='CO₂',dropMode=$('action').value==='drop';
  const duration=window.__qaFastMode?220:(dropMode?1250:Math.max(1500,1400+ml*7)),baseY=1.27;
- const surfaceY=baseY+(.08+liquidVolume/100*.54),target=new THREE.Vector3(.02,solid?1.42:surfaceY+.012,.02);
+ const liquidHeight=.08+liquidVolume/100*.54;
+ const beakerMesh=objects['Beaker'];
+ if(beakerMesh)beakerMesh.updateWorldMatrix(true,false);
+ const beakerSurface=beakerMesh?beakerMesh.localToWorld(new THREE.Vector3(0,liquidHeight+.02,0)):new THREE.Vector3(liquid.position.x,baseY+liquidHeight+.012,liquid.position.z);
+ const target=solid?new THREE.Vector3(beakerSurface.x,1.42,beakerSurface.z):beakerSurface.clone();
  const colors={'HCl':0xe9f1f3,'NaOH':0xf0f3f2,'লিটমাস':0x8d4c9c,'জিঙ্ক':0x9daeb6,'পানি':0xeaf5f7,'সূচক':0xc65b8b,'CO₂':0xd7eff4,'চুনের পানি':0xf2f4e9,'CuSO₄':0x298de0,'লোহা':0x9c9b8e,'বালি':0xc9a66b};
  const color=colors[which]||0x65c7e0;
  const formulas={'HCl':'Hydrochloric acid · HCl','NaOH':'Sodium hydroxide · NaOH','CuSO₄':'Copper(II) sulfate · CuSO₄','পানি':'Water · H₂O','লিটমাস':'Litmus indicator','চুনের পানি':'Limewater · Ca(OH)₂','CO₂':'Carbon dioxide · CO₂','জিঙ্ক':'Zinc · Zn','লোহা':'Iron · Fe','বালি':'Sand · SiO₂'};
@@ -551,9 +555,13 @@ function pourReagent(which,ml){
  const originalPosition=bottle?bottle.position.clone():null,originalRotation=bottle?bottle.rotation.clone():null;
  const bottlePhysics=bottle?physicsBodies.get(bottle):null;
  if(bottlePhysics){bottlePhysics.body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);bottlePhysics.dragging=true;bottlePhysics.body.setLinvel({x:0,y:0,z:0},true);bottlePhysics.body.setAngvel({x:0,y:0,z:0},true);syncApparatusPhysicsPose(bottle,bottlePhysics)}
- const pourPosition=new THREE.Vector3(.68,2.18,.05),pourRotation=.78;
- let origin=new THREE.Vector3(.68,2.18,.05);
- if(bottle&&!dropMode&&!gasMode){bottle.position.copy(pourPosition);bottle.rotation.z=pourRotation;bottle.updateMatrixWorld(true);origin=bottle.localToWorld(new THREE.Vector3(0,.68,0)).clone();bottle.position.copy(originalPosition);bottle.rotation.copy(originalRotation);bottle.updateMatrixWorld(true);}
+ // GestureLab AI interaction-state reference (design only; no source copied):
+ // https://github.com/nobuiz/Virtual-Chemistry-lab
+ // Aim the bottle's real local spout at the current beaker surface, not a fixed world point.
+ const pourRotation=(originalRotation?.z||0)+.78;
+ const pourPosition=new THREE.Vector3(target.x+Math.sin(pourRotation)*.68,target.y+1.05-Math.cos(pourRotation)*.68,target.z);
+ let origin=new THREE.Vector3(pourPosition.x,pourPosition.y,pourPosition.z);
+ if(bottle&&!dropMode&&!gasMode){bottle.position.copy(pourPosition);bottle.rotation.copy(originalRotation);bottle.rotation.z=pourRotation;bottle.updateMatrixWorld(true);origin=bottle.localToWorld(new THREE.Vector3(0,.68,0)).clone();bottle.position.copy(originalPosition);bottle.rotation.copy(originalRotation);bottle.updateMatrixWorld(true);}
  let stream=null,streamMat=null,ripple=null,dropEffects=[],pourCurve=null;
  if(!solid&&!dropMode&&!gasMode){
    const mid=new THREE.Vector3((origin.x+target.x)/2,Math.max(origin.y,target.y)+.08,(origin.z+target.z)/2);
@@ -569,7 +577,7 @@ function pourReagent(which,ml){
  const start=performance.now(),ease=t=>t*t*(3-2*t);
  const tick=now=>{
    const t=Math.min(1,(now-start)/duration),moveIn=ease(Math.min(1,t/.22)),moveOut=ease(Math.max(0,(t-.78)/.22));
-   if(bottle&&!dropMode&&!gasMode){bottle.position.copy(originalPosition).lerp(pourPosition,moveIn*(1-moveOut));bottle.rotation.z=THREE.MathUtils.lerp(originalRotation.z,pourRotation,moveIn*(1-moveOut));bottle.updateMatrixWorld(true);if(bottlePhysics){bottlePhysics.body.setNextKinematicTranslation({x:bottle.position.x,y:bottle.position.y,z:bottle.position.z});bottlePhysics.body.setNextKinematicRotation({x:bottle.quaternion.x,y:bottle.quaternion.y,z:bottle.quaternion.z,w:bottle.quaternion.w})}if(bottleCapMesh)bottleCapMesh.visible=t<.18||t>.82;}
+   if(bottle&&!dropMode&&!gasMode){bottle.position.copy(originalPosition).lerp(pourPosition,moveIn*(1-moveOut));bottle.rotation.copy(originalRotation);bottle.rotation.z=THREE.MathUtils.lerp(originalRotation.z,pourRotation,moveIn*(1-moveOut));bottle.updateMatrixWorld(true);if(bottlePhysics){bottlePhysics.body.setNextKinematicTranslation({x:bottle.position.x,y:bottle.position.y,z:bottle.position.z});bottlePhysics.body.setNextKinematicRotation({x:bottle.quaternion.x,y:bottle.quaternion.y,z:bottle.quaternion.z,w:bottle.quaternion.w})}if(bottleCapMesh)bottleCapMesh.visible=t<.18||t>.82;}
    if(streamMat){stream.visible=t>.22&&t<.82;streamMat.opacity=.66+Math.sin(now*.028)*.07;if(streamMat.userData.shader)streamMat.userData.shader.uniforms.uPourTime.value=now*.001;}
    dropEffects.forEach((bead,i)=>{const u=(t*.9+i*.13)%1;bead.position.copy(pourCurve.getPoint(u));bead.scale.setScalar(.72+.28*Math.sin(now*.018+i));});
    if(ripple){const k=(t*4)%1;ripple.scale.setScalar(.65+k*1.7);ripple.material.opacity=.42*(1-k);}
