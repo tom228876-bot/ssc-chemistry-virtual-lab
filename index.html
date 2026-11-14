@@ -105,16 +105,20 @@ await RAPIER.init();
 const gltfLoader=new GLTFLoader();
 const glbAssetRoot='/assets/apparatus/';
 const glbAssetManifest={
- 'Beaker':{url:'https://grab3d.com/dl/beaker/beaker.glb',scale:4.8},
- 'Conical flask':{url:'https://grab3d.com/dl/erlenmeyer-flask/erlenmeyer-flask.glb',scale:4.8},
- 'Erlenmeyer flask':{url:'https://grab3d.com/dl/erlenmeyer-flask/erlenmeyer-flask.glb',scale:4.8},
- 'Burette':{url:'https://grab3d.com/dl/burette/burette.glb',scale:2},
- 'Retort stand':{url:'https://grab3d.com/dl/retort-stand/retort-stand.glb',scale:2},
- 'Measuring cylinder':{url:'https://grab3d.com/dl/graduated-cylinder/graduated-cylinder.glb',scale:4},
- 'Funnel':{url:'https://grab3d.com/dl/lab-funnel/lab-funnel.glb',scale:4},
- 'Pipette':{url:'https://grab3d.com/dl/pipette-set/pipette-set.glb',scale:2},
- 'Test tube':'test-tube.glb','Microscope':'microscope.glb','Tripod stand':'tripod-stand.glb',
- 'Thermometer':'thermometer.glb','Spring balance':'spring-balance.glb',
+ // CC0 models imported from MilkAndBanana's Lab Assets pack; all paths are local.
+ 'Beaker':{url:'beaker-real.glb',height:.78},
+ 'Conical flask':{url:'conical-flask-real.glb',height:.82},
+ 'Erlenmeyer flask':{url:'conical-flask-real.glb',height:.82},
+ 'Flask':{url:'conical-flask-real.glb',height:.82},
+ 'Test tube':{url:'test-tube-real.glb',height:.82},
+ 'Pipette':{url:'pipette-real.glb',height:.72},
+ 'Thermometer':{url:'thermometer-real.glb',height:.92},
+ 'Tripod stand':{url:'tripod-stand-real.glb',height:.62},
+ 'Burner':{url:'bunsen-burner-real.glb',height:.48},
+ 'Funnel':{url:'funnel-buret-real.glb',height:.78},
+ 'Dropper':{url:'dropper-real.glb',height:.48},
+ // Instruments without an exact CC0 source model retain the existing procedural fallback.
+ 'Microscope':'microscope.glb','Spring balance':'spring-balance.glb',
  'Vernier calipers':'vernier-calipers.glb','Screw gauge':'screw-gauge.glb',
  'Convex lens':'convex-lens.glb','Concave mirror':'concave-mirror.glb'
 };
@@ -357,12 +361,27 @@ function loadApparatusGLB(name,group){
  if(glbCache.has(assetUrl)){
   const model=glbCache.get(assetUrl).clone(true);
   model.scale.setScalar(assetScale);
+  if(typeof entry==='object'&&entry.height){
+   model.updateMatrixWorld(true);
+   let bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
+   model.scale.multiplyScalar(entry.height/Math.max(size.y,.0001));model.updateMatrixWorld(true);
+   bounds=new THREE.Box3().setFromObject(model);const center=bounds.getCenter(new THREE.Vector3());
+   model.position.x-=center.x;model.position.z-=center.z;model.position.y-=bounds.min.y;
+  }
   hideProceduralFallback(group);
   group.add(model);group.userData.glbLoaded=true;group.userData.glbLoading=false;return;
  }
  gltfLoader.load(assetUrl,gltf=>{
   glbCache.set(assetUrl,gltf.scene);
   const model=gltf.scene.clone(true);model.scale.setScalar(assetScale);
+  if(typeof entry==='object'&&entry.height){
+   model.updateMatrixWorld(true);
+   let bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
+   const fit=entry.height/Math.max(size.y,.0001);model.scale.multiplyScalar(fit);model.updateMatrixWorld(true);
+   bounds=new THREE.Box3().setFromObject(model);
+   const center=bounds.getCenter(new THREE.Vector3());
+   model.position.x-=center.x;model.position.z-=center.z;model.position.y-=bounds.min.y;
+  }
   model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){o.material=o.material.clone();if(o.material.roughness===undefined)o.material.roughness=.32;}}});
   hideProceduralFallback(group);
   group.add(model);group.userData.glbLoaded=true;group.userData.glbLoading=false;
