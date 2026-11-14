@@ -459,7 +459,7 @@ function spawnApparatus(name){
  }else if(n==='clamp holder'){
   cyl(.035,.035,.85,steelMat,0,0,0);box(.30,.055,.07,steelMat,.12,.28,0);box(.06,.22,.06,steelMat,.26,.39,0);
   for(const z of [-.09,.09]){const arm=add(new THREE.CylinderGeometry(.018,.018,.32,12),steelMat,.38,.45,z);arm.rotation.z=Math.PI/2;}box(.16,.07,.12,darkMat,.12,.28,.04);
- else if(/beaker|test tube|tube|flask|jar|crucible|cylinder|burette|pipette|dropper|funnel|gas syringe|volumetric|limewater|evaporating dish|petri|conical/.test(n)){
+ }else if(/beaker|test tube|tube|flask|jar|crucible|cylinder|burette|pipette|dropper|funnel|gas syringe|volumetric|limewater|evaporating dish|petri|conical/.test(n)){
   if(/funnel/.test(n)){cyl(.19,.025,.28,glassMat,0,.22,0);cyl(.025,.025,.28,glassMat,0,-.06,0);torus(.18,.012,glassMat,0,.36,0)}
   else if(/pipette|dropper/.test(n)){cyl(.025,.018,.46,glassMat,0,.02,0);add(new THREE.SphereGeometry(.07,20,16),redMat,0,.29,0);cyl(.028,.02,.06,steelMat,0,-.24,0)}
   else if(/flask|volumetric/.test(n)){add(new THREE.SphereGeometry(.24,28,20),glassMat,0,-.02,0);cyl(.075,.075,.34,glassMat,0,.25,0);torus(.078,.012,glassMat,0,.42,0);add(new THREE.SphereGeometry(.18,24,16),liquidMat,0,-.17,0)}
