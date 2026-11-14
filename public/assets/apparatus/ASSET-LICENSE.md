@@ -1,0 +1,3 @@
+# Apparatus GLB assets
+
+All nine models in this directory are original lightweight procedural 3D educational models authored for SSC Chemistry Virtual Lab. They are dedicated to the public domain under CC0 1.0 Universal: https://creativecommons.org/publicdomain/zero/1.0/ . You may copy, modify, distribute and use them, including commercially, without permission or attribution. Models: test tube, microscope, tripod stand, thermometer, spring balance, vernier calipers, micrometer screw gauge, convex lens and concave mirror. Models contain no external texture dependencies and are not dimensionally certified laboratory equipment.
