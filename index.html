@@ -127,6 +127,22 @@ body>.app,.app{width:100vw!important;height:100dvh!important;max-width:none!impo
 /* No apparatus list: show real 3D equipment directly on the laboratory bench. */
 .layout>aside.right{display:none!important}
 .layout>aside.right .section:has(#apparatusPalette){display:none!important}
+/* FIX: the right experiment console was hidden by the legacy full-screen rule. */
+.layout{position:relative!important}
+.layout>aside.right{display:block!important;position:absolute!important;z-index:30!important;top:12px!important;right:12px!important;left:auto!important;width:min(370px,calc(100vw - 24px))!important;max-height:calc(100dvh - 120px)!important;overflow:hidden!important;background:rgba(255,255,255,.97)!important;color:#172b35!important;border:1px solid #cbd5e1!important;border-radius:14px!important;box-shadow:0 12px 38px rgba(12,28,45,.24)!important}
+.layout>aside.right>.side{display:block!important;max-height:calc(100dvh - 120px)!important;overflow-y:auto!important;padding:12px!important;background:transparent!important}
+.layout>aside.right>.side>*{display:block!important}
+.layout>aside.right>.side>.eyebrow{color:#526477!important;font-size:10px!important}
+.layout>aside.right>.side>h2{color:#172b35!important;font-size:17px!important;margin:4px 0 10px!important}
+.layout>aside.right .section{display:block!important;margin:0 0 9px!important;padding:10px!important;background:#fff!important;border:1px solid #e0e6ee!important;border-radius:10px!important}
+.layout>aside.right .section h3{display:block!important;color:#263449!important;font-size:12px!important;margin:0 0 7px!important}
+.layout>aside.right .stat{display:flex!important;justify-content:space-between!important;color:#344256!important;padding:5px 2px!important}
+.layout>aside.right .student-picker{display:block!important}
+.layout>aside.right #titrationControls[style*="display: block"]{display:block!important}
+.layout>aside.right #titrationControls[style*="display: none"]{display:none!important}
+.layout>aside.right .section:has(#observation){max-height:120px!important;overflow:auto!important}
+.layout>aside.right .readout{display:block!important}
+@media(max-width:700px){.layout>aside.right{top:8px!important;right:8px!important;width:min(330px,calc(100vw - 16px))!important;max-height:calc(100dvh - 100px)!important}.layout>aside.right>.side{max-height:calc(100dvh - 100px)!important;padding:9px!important}}
 </style></head><body><main class="app">
 <header class="top"><div class="brand"><div class="logo">⚗</div><div><h1>SSC Chemistry Virtual Lab</h1><p>বাংলাদেশ SSC · Interactive 3D Science Laboratory</p></div></div><div><button class="btn" id="lang">বাংলা / EN</button> <button class="btn" id="reset">↺ Reset</button></div></header>
 <div class="layout">
