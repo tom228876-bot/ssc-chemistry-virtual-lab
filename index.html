@@ -201,20 +201,26 @@ const apparatusCatalog={
   ['Beaker','Measuring cylinder','Dropper','Glass rod','Wash bottle'],
   ['Gas generator flask','Delivery tube','Pneumatic trough','Limewater test tube','Reagent bottle'],
   ['Beaker','Iron nail','Forceps'],
-  ['Filter funnel','Filter paper','Conical flask','Glass rod','Separating funnel'],
-  ['Beakers','Thermometer','Stopwatch','Crystal dish','Distillation flask','Liebig condenser'],
+  ['Filter funnel','Filter paper','Conical flask','Glass rod','Separating funnel','Buchner funnel','Vacuum flask'],
+
+  ['Beakers','Thermometer','Stopwatch','Crystal dish','Distillation flask','Liebig condenser','Receiving flask','Spirit lamp'],
+
   ['Hard-glass test tube','Burner','Inverted funnel','Cold surface'],
   ['Conical flask','Thistle funnel','Delivery tube','Limewater tube'],
   ['Beakers','Electrodes','Low-voltage circuit','LED'],
-  ['Evaporating dish','Tripod','Wire gauze','Burner','Watch glass'],
+  ['Evaporating dish','Tripod','Wire gauze','Burner','Watch glass','Spirit lamp'],
+
   ['Test tubes','Test-tube rack','Solubility rack','Conductivity tester','Reagent bottle'],
-  ['Balance','Volumetric flask','Funnel','Wash bottle','Spatula','Reagent bottle'],
+  ['Balance','Volumetric flask','Funnel','Wash bottle','Spatula','Reagent bottle','Pipette filler','Electronic balance'],
+
   ['Crucible','Tongs','Burner','Evaporating dish','Watch glass','Wire gauze','Spatula'],
   ['Conical flask','Gas syringe','Stopwatch','Thermometer','Wash bottle'],
-  ['Burette','Pipette','Conical flask','Retort stand','Clamp holder'],
+  ['Burette','Pipette','Conical flask','Retort stand','Clamp holder','Retort clamp','Burette funnel'],
+
   ['Zinc electrode','Copper electrode','Salt bridge','Voltmeter','Beakers'],
   ['Test tubes','Droppers','Test-tube rack'],
-  ['pH paper','Spotting tile','Droppers'],
+  ['pH paper','Spotting tile','Droppers','pH meter'],
+
   ['Test tube','Gas delivery tube','Litmus paper','Separating funnel'],
   ['Beaker','Hot plate','Glass rod','Soap mould']
  ],
@@ -287,7 +293,7 @@ function ui(){
  $('completed').textContent=Array.from(done).filter(x=>category==='chemistry'?typeof x==='number':typeof x==='string'&&x.startsWith(category+':')).length+' / '+activeData.length;$('selected').textContent=chosen;
  $('safety').innerHTML='<strong>'+tr('সতর্কতা:','Safety:')+'</strong> '+activeData[current].safety+' '+tr('শুধু শিক্ষামূলক simulation।','Educational simulation only.');
 }
-function select(i){clearSpawnedApparatus();current=i;titrationState={active:false,valveOpen:false,acidVolumeMl:25,titrantVolumeMl:0,acidConcentration:solutionConcentration,titrantConcentration:solutionConcentration,endpoint:false};selectedTools=[];$('experimentPicker').value=String(i);$('sceneTitle').textContent=String(i+1).padStart(2,'0')+' · '+tr(activeData[i].bn,activeData[i].en);$('sceneSub').textContent=tr('পরীক্ষা নির্বাচন করা হয়েছে · উপকরণ বেছে নিন','Practical selected · Choose materials');$('reactionHud').innerHTML='<b>'+tr('পরীক্ষা শুরু করুন','Start practical')+'</b><span>'+tr('উপকরণ নির্বাচন করে Run চাপুন।','Select materials and press Run.')+'</span>';reagent=null;added=[];reagentVolumes={};liquidVolume=0;temperature=25;pourQueue=[];clearFluid();liquid.scale.y=.01;liquid.position.y=1.275;if(meniscus)meniscus.position.y=1.28;$('state').textContent=tr('প্রস্তুত','Ready');$('observation').textContent=tr('পরীক্ষা নির্বাচন করা হয়েছে। উপকরণ যোগ করুন।','Practical selected. Add materials.');liquid.material.color.setHex(0x40b9db);liquid.material.opacity=.6;flaskLiquid.material.color.setHex(0x40b9db);flaskLiquid.material.opacity=.55;scienceObjects.forEach(o=>scene.remove(o));scienceObjects=[];ui();const practicalSet=(apparatusCatalog[category]?.[current]||[]).filter(Boolean);practicalSet.slice(0,4).forEach(name=>spawnApparatus(name));if(category==='chemistry'&&(current===3||current===8||current===19))spawnApparatus('Pneumatic trough')}
+function select(i){clearSpawnedApparatus();current=i;titrationState={active:false,valveOpen:false,acidVolumeMl:25,titrantVolumeMl:0,acidConcentration:solutionConcentration,titrantConcentration:solutionConcentration,endpoint:false};selectedTools=[];$('experimentPicker').value=String(i);$('sceneTitle').textContent=String(i+1).padStart(2,'0')+' · '+tr(activeData[i].bn,activeData[i].en);$('sceneSub').textContent=tr('পরীক্ষা নির্বাচন করা হয়েছে · উপকরণ বেছে নিন','Practical selected · Choose materials');$('reactionHud').innerHTML='<b>'+tr('পরীক্ষা শুরু করুন','Start practical')+'</b><span>'+tr('উপকরণ নির্বাচন করে Run চাপুন।','Select materials and press Run.')+'</span>';reagent=null;added=[];reagentVolumes={};liquidVolume=0;temperature=25;pourQueue=[];clearFluid();liquid.scale.y=.01;liquid.position.y=1.275;if(meniscus)meniscus.position.y=1.28;$('state').textContent=tr('প্রস্তুত','Ready');$('observation').textContent=tr('পরীক্ষা নির্বাচন করা হয়েছে। উপকরণ যোগ করুন।','Practical selected. Add materials.');liquid.material.color.setHex(0x40b9db);liquid.material.opacity=.6;flaskLiquid.material.color.setHex(0x40b9db);flaskLiquid.material.opacity=.55;scienceObjects.forEach(o=>scene.remove(o));scienceObjects=[];ui();const practicalSet=(apparatusCatalog[category]?.[current]||[]).filter(Boolean);practicalSet.slice(0,6).forEach(name=>spawnApparatus(name));if(category==='chemistry'&&(current===3||current===8||current===19))spawnApparatus('Pneumatic trough')}
 window.selectExperiment=(i)=>select(Number(i));
 function addMesh(name,geo,mat,pos){let m=new THREE.Mesh(geo,mat);m.position.set(...pos);m.castShadow=true;m.receiveShadow=true;m.userData.name=name;scene.add(m);objects[name]=m;return m}
 
@@ -435,7 +441,54 @@ function spawnApparatus(name){
  const box=(w,h,d,mat,x,y,z)=>add(new THREE.BoxGeometry(w,h,d),mat,x,y,z);
  const torus=(r,t,mat,x,y,z)=>{const m=add(new THREE.TorusGeometry(r,t,10,36),mat,x,y,z);m.rotation.x=Math.PI/2;return m};
  const n=name.toLowerCase();
- if(n==='pneumatic trough'||n==='gas collection trough'){
+ if(n==='buchner funnel'){
+  const ceramic=new THREE.MeshPhysicalMaterial({color:0xe8e5d8,roughness:.32});
+  const pts=[[0,-.25],[.055,-.25],[.07,-.12],[.22,.12],[.23,.19],[.24,.22]].map(p=>new THREE.Vector2(p[0],p[1]));
+  add(new THREE.LatheGeometry(pts,40),ceramic,0,0,0);
+  cyl(.055,.055,.22,glassMat,0,-.34,0);cyl(.20,.20,.025,ceramic,0,.205,0,false);
+  for(let x=-2;x<=2;x++)for(let z=-2;z<=2;z++)add(new THREE.CircleGeometry(.009,8),darkMat,x*.055,.221,z*.055);
+  g.userData.filterPlate=true;
+ }else if(n==='vacuum flask'){
+  const pts=[[0,-.34],[.12,-.34],[.17,-.20],[.24,.05],[.24,.20],[.12,.29],[.075,.34],[.075,.58],[.09,.61]].map(p=>new THREE.Vector2(p[0],p[1]));
+  add(new THREE.LatheGeometry(pts,40),glassMat,0,0,0);torus(.08,.01,glassMat,0,.61,0);
+  const arm=new THREE.CatmullRomCurve3([new THREE.Vector3(.16,-.03,0),new THREE.Vector3(.29,.02,0),new THREE.Vector3(.39,.15,0),new THREE.Vector3(.52,.15,0)]);
+  add(new THREE.TubeGeometry(arm,24,.035,12,false),glassMat,0,0,0);
+  const liquid=cyl(.16,.16,.10,liquidMat,0,-.25,0,false);g.userData.solutionLiquid=liquid;
+ }else if(n==='pipette filler'){
+  const rubber=new THREE.MeshPhysicalMaterial({color:0x456b83,roughness:.38});
+  add(new THREE.SphereGeometry(.18,28,22),rubber,0,.10,0);cyl(.075,.075,.20,rubber,0,-.08,0);
+  for(let k=0;k<3;k++){const a=k*Math.PI*2/3;add(new THREE.SphereGeometry(.045,16,12),redMat,Math.cos(a)*.17,.10,Math.sin(a)*.17);}
+  cyl(.035,.035,.18,glassMat,0,-.25,0);g.userData.pipetteBulb=true;
+ }else if(n==='electronic balance'){
+  const display=new THREE.MeshStandardMaterial({color:0x172d37,metalness:.18,roughness:.3});
+  box(.62,.14,.44,whiteMat,0,-.12,0);box(.42,.025,.36,steelMat,0,-.025,0);
+  box(.22,.12,.035,display,.13,-.12,.235);
+  box(.16,.045,.012,new THREE.MeshBasicMaterial({color:0x9ce6ca}),.13,-.105,.256);
+  for(let k=0;k<3;k++)add(new THREE.SphereGeometry(.018,12,8),redMat,-.08+k*.07,-.045,.24);
+  g.userData.digitalReadout='0.00 g';
+ }else if(n==='ph meter'){
+  const display=new THREE.MeshStandardMaterial({color:0x102b35,metalness:.12,roughness:.25});
+  box(.48,.62,.16,whiteMat,0,.02,0);box(.34,.20,.025,display,0,.17,.095);
+  box(.23,.07,.012,new THREE.MeshBasicMaterial({color:0x8de0bd}),0,.18,.112);
+  for(let k=0;k<3;k++)add(new THREE.SphereGeometry(.025,14,10),k===0?redMat:steelMat,-.10+k*.10,-.02,.10);
+  const probe=new THREE.CatmullRomCurve3([new THREE.Vector3(.12,-.20,0),new THREE.Vector3(.18,-.35,0),new THREE.Vector3(.20,-.62,0)]);
+  add(new THREE.TubeGeometry(probe,18,.018,8,false),darkMat,0,0,0);cyl(.025,.025,.12,glassMat,.20,-.66,0);
+  g.userData.sensorProbe=true;
+ }else if(n==='retort clamp'){
+  cyl(.028,.028,.32,steelMat,-.22,0,0);
+  const jaw1=add(new THREE.CylinderGeometry(.018,.018,.30,12),steelMat,-.06,.10,0);jaw1.rotation.z=Math.PI/2;
+  const jaw2=add(new THREE.CylinderGeometry(.018,.018,.30,12),steelMat,-.06,-.10,0);jaw2.rotation.z=Math.PI/2;
+  box(.16,.05,.08,darkMat,.16,0,0);cyl(.025,.025,.16,steelMat,.24,0,0);
+  g.userData.clampJaw=true;
+ }else if(n==='burette funnel'){
+  const pts=[[0,-.12],[.025,-.12],[.035,-.04],[.14,.12],[.15,.16]].map(p=>new THREE.Vector2(p[0],p[1]));
+  add(new THREE.LatheGeometry(pts,32),glassMat,0,0,0);cyl(.025,.025,.20,glassMat,0,-.20,0);torus(.145,.009,glassMat,0,.16,0);
+ }else if(n==='spirit lamp'){
+  const brass=new THREE.MeshStandardMaterial({color:0xb58a4b,metalness:.72,roughness:.26});
+  cyl(.16,.19,.22,glassMat,0,-.12,0,false);cyl(.065,.065,.12,brass,0,.04,0);cyl(.025,.025,.12,whiteMat,0,.15,0);
+  add(new THREE.ConeGeometry(.075,.22,20),new THREE.MeshBasicMaterial({color:0xffa34a,transparent:true,opacity:.78}),0,.31,0);
+  g.userData.fuelLamp=true;
+ }else if(n==='pneumatic trough'||n==='gas collection trough'){
   // Water-displacement gas collection: transparent trough, inverted gas jar and submerged delivery tube.
   const waterMat=new THREE.MeshPhysicalMaterial({color:0x56b8d8,transparent:true,opacity:.38,roughness:.08,metalness:0,depthWrite:false});
   const troughW=.98,troughD=.68,troughH=.34,wall=.035;
