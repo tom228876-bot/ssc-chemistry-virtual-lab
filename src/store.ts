@@ -1,0 +1,39 @@
+import { create } from 'zustand'
+import type { ChemKey, ExpId } from './constants'
+import { emptyContents, type Contents } from './lib/chemistry'
+
+export type Side = 'Zn' | 'Cu'
+export interface CellState {
+  zn: Side | null
+  cu: Side | null
+  bridge: boolean
+}
+
+interface LabState {
+  exp: ExpId
+  resetKey: number
+  viewKey: number
+  contents: Contents
+  cell: CellState
+  setExp: (e: ExpId) => void
+  reset: () => void
+  resetView: () => void
+  addChem: (k: ChemKey, ml: number) => void
+  setCell: (p: Partial<CellState>) => void
+}
+
+const freshCell = (): CellState => ({ zn: null, cu: null, bridge: false })
+
+export const useLab = create<LabState>((set) => ({
+  exp: 'neutral',
+  resetKey: 0,
+  viewKey: 0,
+  contents: emptyContents(),
+  cell: freshCell(),
+  setExp: (exp) =>
+    set((s) => ({ exp, contents: emptyContents(), cell: freshCell(), resetKey: s.resetKey + 1, viewKey: s.viewKey + 1 })),
+  reset: () => set((s) => ({ contents: emptyContents(), cell: freshCell(), resetKey: s.resetKey + 1 })),
+  resetView: () => set((s) => ({ viewKey: s.viewKey + 1 })),
+  addChem: (k, ml) => set((s) => ({ contents: { ...s.contents, [k]: s.contents[k] + ml } })),
+  setCell: (p) => set((s) => ({ cell: { ...s.cell, ...p } })),
+}))
