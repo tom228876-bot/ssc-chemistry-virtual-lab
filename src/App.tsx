@@ -2,14 +2,17 @@ import { useEffect } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
-import { BENCH_Y, EXPS } from './constants'
+import { BENCH_Y } from './constants'
 import { useLab } from './store'
 import { chemReport, react, totalVolume } from './lib/chemistry'
 import { clamp } from './lib/math'
+import { LIME_K, limeMilk } from './lib/gaslink'
 import { DragManager } from './lib/drag'
 import { RoomEnv, Room } from './scene/Room'
 import { ChemExperiment } from './scene/ChemExperiment'
 import { CellExperiment } from './scene/CellExperiment'
+import Guide from './Guide'
+import Finder from './Finder'
 
 interface CtrlLike {
   target: THREE.Vector3
@@ -38,7 +41,6 @@ function CameraRig() {
 function Scene() {
   const exp = useLab((s) => s.exp)
   const resetKey = useLab((s) => s.resetKey)
-  const info = EXPS.find((e) => e.id === exp)!
   return (
     <>
       <RoomEnv />
@@ -66,7 +68,7 @@ function Scene() {
       />
       <CameraRig />
       <DragManager />
-      {exp === 'cell' ? <CellExperiment key={resetKey} /> : <ChemExperiment key={exp + resetKey} bottles={info.bottles} />}
+      {exp.kind === 'cell' ? <CellExperiment key={resetKey} /> : <ChemExperiment key={exp.id + resetKey} bottles={exp.bottles} limewater={exp.limewater} />}
     </>
   )
 }
@@ -75,12 +77,13 @@ function Panel() {
   const exp = useLab((s) => s.exp)
   const contents = useLab((s) => s.contents)
   const cell = useLab((s) => s.cell)
-  const info = EXPS.find((e) => e.id === exp)!
+  const lime = useLab((s) => s.lime)
+  const corked = useLab((s) => s.corked)
 
   let reads: [string, string, string]
   let obs: string
   let eq: string
-  if (exp === 'cell') {
+  if (exp.kind === 'cell') {
     const act = cell.zn === 'Zn' && cell.cu === 'Cu' && cell.bridge
     reads = [(act ? 1.1 : 0).toFixed(2) + ' V', cell.bridge ? 'আছে' : 'নেই', act ? 'সম্পূর্ণ' : 'অসম্পূর্ণ']
     eq = 'Zn | Zn²⁺ ‖ Cu²⁺ | Cu'
@@ -104,11 +107,24 @@ function Panel() {
     eq = rep.eq
   }
 
+  if (exp.limewater) {
+    const m = limeMilk(lime)
+    const state = lime < 0.05 ? 'স্বচ্ছ' : lime <= LIME_K ? 'ঘোলা হচ্ছে' : m > 0.05 ? 'আবার স্বচ্ছ হচ্ছে' : 'আবার স্বচ্ছ'
+    reads = [reads[0], state, lime.toFixed(1) + ' mmol']
+    const extra: string[] = [corked ? 'ছিপি লাগানো আছে, গ্যাস নল দিয়ে চুনের পানিতে যাচ্ছে।' : 'ছিপি খোলা। গ্যাস বাইরে চলে যাচ্ছে; চুনের পানিতে নিতে ছিপি লাগাও।']
+    if (lime > 0.05) {
+      extra.push(lime <= LIME_K ? 'চুনের পানি ঘোলা হচ্ছে: অদ্রবণীয় CaCO₃ তৈরি হচ্ছে।' : 'চুনের পানি আবার স্বচ্ছ হচ্ছে: অতিরিক্ত CO₂ দ্রবণীয় Ca(HCO₃)₂ তৈরি করছে।')
+    }
+    obs = [obs, ...extra].filter(Boolean).join('\n')
+    if (lime > 0.05) eq += '\nCa(OH)₂ + CO₂ → CaCO₃↓ + H₂O'
+    if (lime > LIME_K + 0.2) eq += '\nCaCO₃ + CO₂ + H₂O → Ca(HCO₃)₂'
+  }
+
   return (
     <div className="panel">
-      <div className="task"><h3>কাজ</h3>{info.task}</div>
+      <div className="task"><h3>কাজ</h3>{exp.task}</div>
       <div className="reads">
-        {info.labels.map((l, i) => (
+        {exp.labels.map((l, i) => (
           <div key={l}><small>{l}</small><b>{reads[i]}</b></div>
         ))}
       </div>
@@ -116,6 +132,11 @@ function Panel() {
       <div className="obs">{obs}</div>
       <h3>সমীকরণ</h3>
       <div className="eq">{eq}</div>
+      {exp.limewater && (
+        <button className="cork" onClick={() => useLab.getState().setCorked(!corked)}>
+          {corked ? '🔓 ছিপি খোলো' : '🔒 ছিপি ও নল লাগাও'}
+        </button>
+      )}
       <div className="btns">
         <button onClick={() => useLab.getState().reset()}>↺ আবার শুরু</button>
         <button className="alt" onClick={() => useLab.getState().resetView()}>🎥 ক্যামেরা রিসেট</button>
@@ -125,7 +146,6 @@ function Panel() {
 }
 
 export default function App() {
-  const exp = useLab((s) => s.exp)
   return (
     <>
       <Canvas shadows dpr={[1, 2]} camera={{ fov: 42, near: 0.1, far: 100, position: [0, 4, 6] }}>
@@ -133,15 +153,10 @@ export default function App() {
       </Canvas>
       <div className="top">
         <h1>⚗ SSC রসায়ন ভার্চুয়াল ল্যাব</h1>
-        <div className="tabs">
-          {EXPS.map((e) => (
-            <button key={e.id} className={'tab' + (e.id === exp ? ' on' : '')} onClick={() => useLab.getState().setExp(e.id)}>
-              {e.name}
-            </button>
-          ))}
-        </div>
+        <Finder />
       </div>
       <Panel />
+      <Guide />
     </>
   )
 }

@@ -14,10 +14,23 @@ export function makeLabelTexture(a: string, b: string): THREE.CanvasTexture {
   x.strokeRect(3, 3, 250, 154)
   x.fillStyle = '#10263a'
   x.textAlign = 'center'
-  x.font = '700 58px ' + FONT
+
+  let size = 58
+  x.font = '700 ' + size + 'px ' + FONT
+  while (x.measureText(a).width > 220 && size > 22) {
+    size -= 2
+    x.font = '700 ' + size + 'px ' + FONT
+  }
   x.fillText(a, 128, 84)
-  x.font = '500 28px ' + FONT
+
+  size = 28
+  x.font = '500 ' + size + 'px ' + FONT
+  while (x.measureText(b).width > 230 && size > 14) {
+    size -= 2
+    x.font = '500 ' + size + 'px ' + FONT
+  }
   x.fillText(b, 128, 128)
+
   const t = new THREE.CanvasTexture(c)
   t.colorSpace = THREE.SRGBColorSpace
   t.anisotropy = 8

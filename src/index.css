@@ -20,3 +20,43 @@ canvas{display:block;touch-action:none}
 .btns{display:flex;gap:6px}
 .btns button{flex:1;border:0;border-radius:10px;padding:8px;background:#0b5cab;color:#fff;font:inherit;cursor:pointer}
 .btns button.alt{background:#e3e8ee;color:#223}
+.guide{position:fixed;left:12px;top:56px;width:290px;max-height:calc(100% - 80px);overflow:auto;background:#fffffff2;border-radius:14px;padding:12px;box-shadow:0 8px 30px #0003;font-size:13px;line-height:1.5}
+@media(max-width:760px){.guide{left:8px;right:8px;width:auto;max-height:36vh}}
+.gpill{position:fixed;left:12px;top:56px;border:0;border-radius:999px;padding:8px 14px;background:#fffffff2;box-shadow:0 4px 16px #0003;font:inherit;font-size:13px;cursor:pointer}
+.ghead{display:flex;justify-content:space-between;align-items:center}
+.ghead h3{margin:0;font-size:13px;color:#0b5cab}
+.gclose{border:0;background:none;font-size:15px;cursor:pointer;color:#667}
+.gbar{height:6px;border-radius:3px;background:#e3e8ee;margin:8px 0}
+.gbar span{display:block;height:100%;border-radius:3px;background:#27a35a;transition:width .3s}
+.gsteps{list-style:none;margin:0 0 8px;padding:0}
+.gsteps li{display:flex;gap:8px;padding:5px 6px;border-radius:8px;color:#667}
+.gsteps li b{flex:none;width:20px;height:20px;border-radius:50%;background:#e3e8ee;color:#445;text-align:center;font-size:11px;line-height:20px}
+.gsteps li.now{background:#eef6ff;color:#0b2233;font-weight:600}
+.gsteps li.now b{background:#0b5cab;color:#fff}
+.gsteps li.done{color:#2a7a4b}
+.gsteps li.done b{background:#27a35a;color:#fff}
+.ghint{background:#fff8e1;border-radius:10px;padding:8px 10px}
+.gquiz h3{margin:6px 0 8px;font-size:13px;color:#0b5cab}
+.gq{margin-bottom:10px}
+.gq>div:first-child{font-weight:600;margin-bottom:4px}
+.gq button{display:block;width:100%;text-align:left;margin:3px 0;padding:6px 10px;border:1px solid #d5dde5;border-radius:8px;background:#fff;font:inherit;cursor:pointer}
+.gq button:disabled{cursor:default}
+.gq button.ok{background:#e2f6e9;border-color:#27a35a}
+.gq button.bad{background:#fde8e8;border-color:#d44}
+.gwhy{background:#f1f4f6;border-radius:8px;padding:6px 10px;margin-top:4px}
+.gscore{display:flex;justify-content:space-between;align-items:center;font-weight:700}
+.gscore button{border:0;border-radius:8px;padding:6px 10px;background:#0b5cab;color:#fff;font:inherit;cursor:pointer}
+.finder{position:relative;flex:1;min-width:240px;max-width:520px}
+.finder input{width:100%;border:0;border-radius:999px;padding:9px 16px;font:inherit;font-size:13px;background:#ffffffee;color:#0b2233;outline:none;box-shadow:0 2px 10px #0003}
+.fback{position:fixed;inset:0;z-index:5}
+.fdrop{position:absolute;z-index:6;top:100%;left:0;right:0;margin-top:6px;background:#fff;color:#0b2233;border-radius:14px;box-shadow:0 10px 30px #0004;max-height:60vh;overflow:auto;padding:6px}
+.fdrop .fnone{padding:8px 10px;font-size:12px;color:#556}
+.fdrop button{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:10px;font:inherit;cursor:pointer}
+.fdrop button:hover,.fdrop button.on{background:#eef6ff}
+.fdrop button b{display:block;font-size:13px}
+.fdrop button small{display:block;font-size:11px;color:#667}
+.gyou{background:#f1f4f6;border-radius:8px;padding:6px 10px;margin:6px 0;font-size:12px}
+.gneeds{margin:6px 0}
+.gneeds h4{margin:0 0 4px;font-size:12px;color:#0b5cab}
+.gneeds span{display:inline-block;background:#eef6ff;border-radius:999px;padding:2px 10px;margin:0 4px 4px 0;font-size:11px}
+.cork{display:block;width:100%;margin-bottom:6px;border:0;border-radius:10px;padding:8px;background:#7a4b1d;color:#fff;font:inherit;cursor:pointer}

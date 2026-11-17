@@ -6,10 +6,12 @@ import { useLab } from '../store'
 import { react, totalVolume } from '../lib/chemistry'
 import { beginDrag, drag, hover, resolveOverlap, solids, useSolid } from '../lib/drag'
 import { clamp, smooth } from '../lib/math'
+import { gasLink } from '../lib/gaslink'
+import { GasTest } from './GasTest'
 import { Beaker, BottleModel, LabelBand } from './Glassware'
 
 /** shared state between a pouring bottle and the visual stream */
-const pour = { until: 0, from: new THREE.Vector3(), to: new THREE.Vector3(), color: new THREE.Color('#fff') }
+const pour = { until: 0, solid: false, from: new THREE.Vector3(), to: new THREE.Vector3(), color: new THREE.Color('#fff') }
 
 function Bottle({ chem, x, z }: { chem: ChemKey; x: number; z: number }) {
   const c = CHEM[chem]
@@ -54,7 +56,7 @@ function Bottle({ chem, x, z }: { chem: ChemKey; x: number; z: number }) {
       const hd = Math.hypot(tmp.m.x - vessel.position.x, tmp.m.z - vessel.position.z)
       const lab = useLab.getState()
       const V = totalVolume(lab.contents)
-      if (hd < 0.5 && V < 249.9) {
+      if (hd < 0.5 && V < 249.9 && !lab.corked) {
         const amt = Math.min(c.rate * dt * clamp((s.tilt - 0.8) / 0.4, 0, 1), 250 - V)
         lab.addChem(chem, amt)
         s.poured += amt
@@ -62,10 +64,11 @@ function Bottle({ chem, x, z }: { chem: ChemKey; x: number; z: number }) {
         pour.from.copy(tmp.m)
         pour.to.set(tmp.m.x + (vessel.position.x - tmp.m.x) * 0.35, surf, tmp.m.z + (vessel.position.z - tmp.m.z) * 0.35)
         pour.color.set(c.color)
+        pour.solid = !!c.solid
         pour.until = performance.now() + 80
       }
     }
-    liquid.current.scale.y = Math.max(0.001, 1 - s.poured / 450)
+    liquid.current.scale.y = Math.max(0.001, 1 - s.poured / (c.solid ? 40 : 450))
   })
 
   return (
@@ -94,10 +97,11 @@ function PourStream() {
     const a = pour.from
     const b = pour.to
     const ctrl = new THREE.Vector3(a.x + (b.x - a.x) * 0.7, a.y, a.z + (b.z - a.z) * 0.7)
-    const geo = new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(a.clone(), ctrl, b.clone()), 14, 0.018, 8, false)
+    const geo = new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(a.clone(), ctrl, b.clone()), 14, pour.solid ? 0.032 : 0.018, 8, false)
     m.geometry.dispose()
     m.geometry = geo
     mat.current.color.copy(pour.color)
+    mat.current.opacity = pour.solid ? 1 : 0.85
   })
   return (
     <mesh ref={mesh} visible={false}>
@@ -112,6 +116,10 @@ function Vessel() {
   const ppt = useRef<THREE.Mesh>(null!)
   const cloud = useRef(0)
   const prevPpt = useRef(0)
+  const bub = useRef<THREE.InstancedMesh>(null!)
+  const bubs = useRef(Array.from({ length: 48 }, () => ({ on: false, x: 0, z: 0, y: 0, v: 0, s: 0.02 })))
+  const gas = useRef({ pending: 0, prev: 0, acc: 0 })
+  const dummy = useMemo(() => new THREE.Object3D(), [])
   useSolid(group, 'vessel', 0.55)
 
   const liquidGeo = useMemo(() => {
@@ -124,7 +132,8 @@ function Vessel() {
     g.translate(0, 0.5, 0)
     return g
   }, [])
-  const turbid = useMemo(() => new THREE.Color('#6fa3e8'), [])
+  const turbid = useMemo(() => new THREE.Color(), [])
+  const white = useMemo(() => new THREE.Color('#ffffff'), [])
 
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.05)
@@ -137,16 +146,54 @@ function Vessel() {
     liquid.current.visible = R.V > 0.05
     liquid.current.scale.set(1, Math.max(h, 0.001), 1)
 
-    cloud.current = Math.min(1, cloud.current + Math.max(0, R.ppt - prevPpt.current) * 1.2)
-    prevPpt.current = R.ppt
+    // freshly formed precipitate clouds the solution, then settles
+    cloud.current = Math.min(1, cloud.current + Math.max(0, R.pptTotal - prevPpt.current) * 1.2)
+    prevPpt.current = R.pptTotal
     cloud.current *= Math.exp(-dt * 0.25)
+    turbid.copy(R.pptColor).lerp(white, 0.35)
     const mat = liquid.current.material as THREE.MeshPhysicalMaterial
     mat.color.copy(R.color).lerp(turbid, cloud.current * 0.8)
     mat.opacity = 0.72 + cloud.current * 0.2
 
-    const ph = Math.min(h, Math.min(0.22, 0.02 + R.ppt * 0.12))
-    ppt.current.visible = R.ppt > 0.01
+    // bottom layer: precipitate, leftover solid, deposited copper
+    const ph = Math.min(h, Math.min(0.22, 0.02 + R.layerTotal * 0.12))
+    ppt.current.visible = R.layerTotal > 0.01
     ppt.current.scale.set(1, Math.max(ph, 0.001), 1)
+    ;(ppt.current.material as THREE.MeshStandardMaterial).color.copy(R.layerColor)
+
+    // gas bubbles: energy jumps when new gas forms, then fades
+    const g2 = gas.current
+    const gasNow = R.gas.CO2 + R.gas.H2
+    g2.pending += Math.max(0, gasNow - g2.prev)
+    g2.prev = gasNow
+    const rel = g2.pending * (1 - Math.exp(-dt * 0.12)) // gas leaving the liquid this frame (mmol)
+    g2.pending -= rel
+    const corked = useLab.getState().corked
+    const flowRate = rel / Math.max(dt, 0.001)
+    gasLink.flow = corked ? rel : 0
+    gasLink.rate = corked ? flowRate : 0
+    g2.acc += Math.min(40, flowRate * 8) * dt
+    const bs = bubs.current
+    while (g2.acc >= 1) {
+      g2.acc -= 1
+      const i = bs.findIndex((b) => !b.on)
+      if (i < 0) break
+      const a = Math.random() * Math.PI * 2
+      const r = Math.sqrt(Math.random()) * 0.33
+      bs[i] = { on: true, x: Math.cos(a) * r, z: Math.sin(a) * r, y: 0.05, v: 0.25 + Math.random() * 0.25, s: 0.015 + Math.random() * 0.02 }
+    }
+    for (let i = 0; i < bs.length; i++) {
+      const b = bs[i]
+      if (b.on) {
+        b.y += b.v * dt
+        if (b.y > h) b.on = false
+      }
+      dummy.position.set(b.x, 0.035 + b.y, b.z)
+      dummy.scale.setScalar(b.on ? b.s : 0)
+      dummy.updateMatrix()
+      bub.current.setMatrixAt(i, dummy.matrix)
+    }
+    bub.current.instanceMatrix.needsUpdate = true
   })
 
   return (
@@ -160,15 +207,19 @@ function Vessel() {
         <meshStandardMaterial color="#4f86e0" roughness={0.95} />
       </mesh>
       <mesh ref={liquid} geometry={liquidGeo} position-y={0.035} renderOrder={1} visible={false}>
-        <meshPhysicalMaterial transparent opacity={0.75} roughness={0.05} clearcoat={1} ior={1.33} />
+        <meshPhysicalMaterial transparent opacity={0.75} roughness={0.05} clearcoat={1} ior={1.33} depthWrite={false} />
       </mesh>
+      <instancedMesh ref={bub} args={[undefined, undefined, 48]} frustumCulled={false} renderOrder={2}>
+        <sphereGeometry args={[1, 10, 8]} />
+        <meshStandardMaterial color="#ffffff" transparent opacity={0.65} roughness={0.1} depthWrite={false} />
+      </instancedMesh>
       <Beaker />
       <LabelBand radius={0.49} y={0.5} width={0.34} height={0.2} a="বিকার" b="250 mL" />
     </group>
   )
 }
 
-export function ChemExperiment({ bottles }: { bottles: ChemKey[] }) {
+export function ChemExperiment({ bottles, limewater }: { bottles: ChemKey[]; limewater?: boolean }) {
   return (
     <>
       {bottles.map((k, i) => (
@@ -176,6 +227,7 @@ export function ChemExperiment({ bottles }: { bottles: ChemKey[] }) {
       ))}
       <Vessel />
       <PourStream />
+      {limewater && <GasTest />}
     </>
   )
 }
